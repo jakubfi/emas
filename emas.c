@@ -139,15 +139,17 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	res = assemble(program);
+	res = assemble(program, 0);
 
 	if (res < 0) {
+		printf("%s\n", aerr);
 		goto cleanup;
 	}
 
 	if (res > 0) {
-		res = assemble(program);
+		res = assemble(program, 1);
 		if (res) {
+			printf("%s\n", aerr);
 			goto cleanup;
 		}
 	}

@@ -33,6 +33,7 @@ struct dh_table *sym;
 struct st *program;
 int cpu = CPU_DEFAULT;
 int ic;
+char aerr[MAX_ERRLEN+1];
 
 // -----------------------------------------------------------------------
 int prog_cpu(char *cpu_name)
@@ -56,15 +57,19 @@ int prog_cpu(char *cpu_name)
 }
 
 // -----------------------------------------------------------------------
-void aafatal(struct st *t, char *format, ...)
+void aaerror(struct st *t, char *format, ...)
 {
 	assert(t&&format);
-	printf("%s: Error at line %d column %d: ", t->loc_file, t->loc_line, t->loc_col);
+
 	va_list ap;
-	va_start(ap, format);
-	vprintf(format, ap);
-	va_end(ap);
-	printf("\n");
+
+	int len = snprintf(aerr, MAX_ERRLEN, "%s: Error at line %d column %d: ", t->loc_file, t->loc_line, t->loc_col);
+
+	if (len && (len<MAX_ERRLEN)) {
+		va_start(ap, format);
+		vsnprintf(aerr+len, MAX_ERRLEN-len, format, ap);
+		va_end(ap);
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -84,7 +89,7 @@ int eval_1arg(struct st *t)
 			t->val = ~arg->val;
 			break;
 		default:
-			aafatal(t, "Unknown operator: #%d ('%c')", t->type, t->type);
+			aaerror(t, "Unknown operator: #%d ('%c')", t->type, t->type);
 			return -1;
 	}
 
@@ -146,7 +151,7 @@ int eval_2arg(struct st *t)
 			t->val = arg1->val << (15-arg2->val);
 			break;
 		default:
-			aafatal(t, "Unknown operator: '%i (%c)'", t->type, t->type);
+			aaerror(t, "Unknown operator: '%i (%c)'", t->type, t->type);
 			return -1;
 	}
 
@@ -190,10 +195,10 @@ int eval_float(struct st *t)
 	}
 	// check for overflow/underflow
 	if (exp > 127) {
-		aafatal(t, "floating point overflow");
+		aaerror(t, "floating point overflow");
 		return -1;
 	} else if (((m != 0.0f) && exp < -128)) {
-		aafatal(t, "floating point underflow");
+		aaerror(t, "floating point underflow");
 		return -1;
 	}
 
@@ -226,7 +231,7 @@ int eval_multiword(struct st *t)
 
 	while (arg) {
 		if (count >= DATA_MAX * chunk_size) {
-			aafatal(t, "Argument list too long (%d max)", DATA_MAX);
+			aaerror(t, "Argument list too long (%d max)", DATA_MAX);
 			return -1;
 		}
 
@@ -287,7 +292,7 @@ int eval_res(struct st *t)
 	// first, we need element count
 	u = eval(t->args);
 	if (u) {
-		aafatal(t, "Element count for .res is undefined");
+		aaerror(t, "Element count for .res is undefined");
 		return -1;
 	}
 
@@ -319,7 +324,7 @@ int eval_org(struct st *t)
 {
 	int u = eval(t->args);
 	if (u) {
-		aafatal(t, "Value for .org is undefined");
+		aaerror(t, "Value for .org is undefined");
 		return -1;
 	}
 
@@ -374,7 +379,7 @@ int eval_string(struct st *t)
 int eval_label(struct st *t)
 {
 	if (dh_get(sym, t->str)) {
-		aafatal(t, "symbol '%s' already defined", t->str);
+		aaerror(t, "symbol '%s' already defined", t->str);
 		return -1;
 	}
 
@@ -393,7 +398,7 @@ int eval_equ(struct st *t)
 
 	if (s) {
 		if (s->type & SYM_CONST) { // defined, but constant
-			aafatal(t, "symbol '%s' cannot be redefined", t->str);
+			aaerror(t, "symbol '%s' cannot be redefined", t->str);
 			return -1;
 		} else { // defined, variable - just redefine
 			dh_delete(sym, t->str);
@@ -419,7 +424,7 @@ int eval_const(struct st *t)
 	int u;
 
 	if (dh_get(sym, t->str)) {
-		aafatal(t, "symbol '%s' already defined", t->str);
+		aaerror(t, "symbol '%s' already defined", t->str);
 		return -1;
 	}
 
@@ -443,6 +448,7 @@ int eval_name(struct st *t)
 	struct dh_elem *s = dh_get(sym, t->str);
 
 	if (!s) {
+		aaerror(t, "symbol '%s' not defined", t->str);
 		return 1;
 	}
 
@@ -542,10 +548,6 @@ int eval_as_short(struct st *t, int type, int op)
 		case OP_EXL:
 		case OP_NRF:
 			min = 0; max = 255;
-			break;
-		case OP_BLC:
-			min = 0xff00; max = 0xffff;
-			break;
 		default:
 			min = -32768; max = 65535;
 			break;
@@ -556,7 +558,7 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if ((t->val < min) || (t->val > max)) {
-		aafatal(t, "short argument value %i out of range (%i..%i)", t->val, min, max);
+		aaerror(t, "short argument value %i out of range (%i..%i)", t->val, min, max);
 		return -1;
 	}
 
@@ -589,6 +591,10 @@ int eval_op_short(struct st *t)
 			}
 			break;
 		case OP_BLC:
+			if (arg->val & 255) {
+				aaerror(t, "lower bits set in BLC argument");
+				return -1;
+			}
 			arg->val = arg->val >> 8;
 			break;
 		default:
@@ -679,12 +685,12 @@ int eval(struct st *t)
 			return eval_op_short(t);
 		
 	}
-	aafatal(t, "unknown type to eval: %i", t->type);
+	aaerror(t, "unknown type to eval: %i", t->type);
 	return -1;
 }
 
 // -----------------------------------------------------------------------
-int assemble(struct st *prog)
+int assemble(struct st *prog, int pass)
 {
 	struct st *t = prog->args;
 	int u = 0;
@@ -701,6 +707,9 @@ int assemble(struct st *prog)
 		u = eval(t);
 		if (u < 0) {
 			return u;
+		}
+		if ((pass >0) && (u > 0)) {
+			return -1;
 		}
 		uret += u;
 		t = t->next;

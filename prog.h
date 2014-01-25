@@ -20,11 +20,12 @@
 #include "dh.h"
 #include "st.h"
 
-#define IMAGE_MAX 2*64*1024
+#define MAX_ERRLEN 1024
 
 extern struct dh_table *sym;
 extern struct st *program;
 extern int cpu;
+extern char aerr[MAX_ERRLEN+1];
 
 enum cpu_types {
 	CPU_DEFAULT = 0,
@@ -40,7 +41,7 @@ enum sym_types {
 };
 
 int prog_cpu(char *cpu_name);
-int assemble(struct st *prog);
+int assemble(struct st *prog, int pass);
 
 int eval(struct st *t);
 
