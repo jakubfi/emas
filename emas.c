@@ -64,7 +64,7 @@ int parse_args(int argc, char **argv)
 				} else if (!strcmp(optarg, "emelf")) {
 					otype = O_EMELF;
 				} else {
-					printf("Fatal: unknown output type: '%s'.\n", optarg);
+					printf("Unknown output type: '%s'.\n", optarg);
 					return -1;
 				}
 				break;
@@ -87,7 +87,7 @@ int parse_args(int argc, char **argv)
 		input_file = argv[optind];
 		output_file = argv[optind+1];
 	} else {
-		printf("Fatal: Wrong usage.\n");
+		printf("Wrong usage.\n");
 		return -1;
 	}
 
@@ -109,13 +109,13 @@ int main(int argc, char **argv)
 	}
 
 	if (kw_init() < 0) {
-		printf("Fatal: Internal dictionary initialization failed.\n");
+		printf("Internal dictionary initialization failed.\n");
 		goto cleanup;
 	}
 
 	sym = dh_create(16000, 1);
 	if (!sym) {
-		printf("Fatal: Failed to create symbol table.\n");
+		printf("Failed to create symbol table.\n");
 		goto cleanup;
 	}
 
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 
 	yyin = fopen(input_file, "r");
 	if (!yyin) {
-		printf("Fatal: Cannot open source file: '%s'\n", input_file);
+		printf("Cannot open source file: '%s'\n", input_file);
 		goto cleanup;
 	}
 
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 	fclose(yyin);
 
 	if (!program) { // shouldn't happen - parser should always produce program (even empty one)
-		printf("Fatal: Parse produced empty tree.\n");
+		printf("Parse produced empty tree.\n");
 		goto cleanup;
 	}
 

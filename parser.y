@@ -99,6 +99,7 @@ typedef struct YYLTYPE {
 %token <v> OP_SHC "SHC"
 %token <v> OP_R "(reg) argument op"
 %token <v> OP__ "argumentless op"
+%token <v> OP_X "argumentless extra op"
 %token <v> OP_BLC "BLC"
 %token <v> OP_BRC "BRC"
 %token <v> OP_EXL "EXL"
@@ -165,7 +166,8 @@ op:
 	| OP_T expr			{ $$ = st_int(OP_T, $1); st_arg_app($$, $2); }
 	| OP_SHC reg ','expr{ $$ = st_int(OP_SHC, $1|($2<<6)); st_arg_app($$, $4); }
 	| OP_R reg			{ $$ = st_int(OP_R, $1|($2<<6)); }
-	| OP__				{ $$ = st_int(OP_R, $1); }
+	| OP__				{ $$ = st_int(OP__, $1); }
+	| OP_X				{ $$ = st_int(OP_X, $1); }
 	| OP_BLC expr		{ $$ = st_int(OP_BLC, $1); st_arg_app($$, $2); }
 	| OP_BRC expr		{ $$ = st_int(OP_BRC, $1); st_arg_app($$, $2); }
 	| OP_EXL expr		{ $$ = st_int(OP_EXL, $1); st_arg_app($$, $2); }

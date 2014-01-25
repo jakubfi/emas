@@ -31,9 +31,12 @@
 
 struct dh_table *sym;
 struct st *program;
-int cpu = CPU_DEFAULT;
-int ic;
+
 char aerr[MAX_ERRLEN+1];
+
+int ic;
+int cpu = CPU_DEFAULT;
+int ic_max = 32767;
 
 // -----------------------------------------------------------------------
 int prog_cpu(char *cpu_name)
@@ -47,6 +50,7 @@ int prog_cpu(char *cpu_name)
 			cpu = CPU_MERA400;
 		} else if (!strcasecmp(cpu_name, "mx16")) {
 			cpu = CPU_MX16;
+			ic_max = 65535;
 		} else {
 			yyerror("Unknown CPU type '%s'", cpu_name);
 			ret = 0;
@@ -195,10 +199,10 @@ int eval_float(struct st *t)
 	}
 	// check for overflow/underflow
 	if (exp > 127) {
-		aaerror(t, "floating point overflow");
+		aaerror(t, "Floating point overflow");
 		return -1;
 	} else if (((m != 0.0f) && exp < -128)) {
-		aaerror(t, "floating point underflow");
+		aaerror(t, "Floating point underflow");
 		return -1;
 	}
 
@@ -379,7 +383,7 @@ int eval_string(struct st *t)
 int eval_label(struct st *t)
 {
 	if (dh_get(sym, t->str)) {
-		aaerror(t, "symbol '%s' already defined", t->str);
+		aaerror(t, "Symbol '%s' already defined", t->str);
 		return -1;
 	}
 
@@ -398,7 +402,7 @@ int eval_equ(struct st *t)
 
 	if (s) {
 		if (s->type & SYM_CONST) { // defined, but constant
-			aaerror(t, "symbol '%s' cannot be redefined", t->str);
+			aaerror(t, "Symbol '%s' cannot be redefined", t->str);
 			return -1;
 		} else { // defined, variable - just redefine
 			dh_delete(sym, t->str);
@@ -424,7 +428,7 @@ int eval_const(struct st *t)
 	int u;
 
 	if (dh_get(sym, t->str)) {
-		aaerror(t, "symbol '%s' already defined", t->str);
+		aaerror(t, "Symbol '%s' already defined", t->str);
 		return -1;
 	}
 
@@ -448,7 +452,7 @@ int eval_name(struct st *t)
 	struct dh_elem *s = dh_get(sym, t->str);
 
 	if (!s) {
-		aaerror(t, "symbol '%s' not defined", t->str);
+		aaerror(t, "Symbol '%s' not defined", t->str);
 		return 1;
 	}
 
@@ -558,7 +562,7 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if ((t->val < min) || (t->val > max)) {
-		aaerror(t, "short argument value %i out of range (%i..%i)", t->val, min, max);
+		aaerror(t, "Short argument value %i out of range (%i..%i)", t->val, min, max);
 		return -1;
 	}
 
@@ -592,7 +596,7 @@ int eval_op_short(struct st *t)
 			break;
 		case OP_BLC:
 			if (arg->val & 255) {
-				aaerror(t, "lower bits set in BLC argument");
+				aaerror(t, "Lower byte for BLC argument is not 0");
 				return -1;
 			}
 			arg->val = arg->val >> 8;
@@ -671,6 +675,11 @@ int eval(struct st *t)
 		case OP_RN:
 		case OP_N:
 			return eval_op_norm(t);
+		case OP_X:
+			if (cpu != CPU_MX16) {
+				aaerror(t, "Instruction valid only for MX-16");
+				return -1;
+			}
 		case OP_R:
 		case OP__:
 			return eval_op_noarg(t);
@@ -683,9 +692,9 @@ int eval(struct st *t)
 		case OP_NRF:
 		case OP_HLT:
 			return eval_op_short(t);
-		
 	}
-	aaerror(t, "unknown type to eval: %i", t->type);
+
+	aaerror(t, "Unknown syntax element: %i", t->type);
 	return -1;
 }
 
@@ -699,6 +708,10 @@ int assemble(struct st *prog, int pass)
 	ic = 0;
 
 	while (t) {
+		if (ic > ic_max) {
+			aaerror(t, "Program too large (>%i words)", ic_max+1);
+			return -1;
+		}
 		if (t->ic < 0) {
 			t->ic = ic;
 		} else {
