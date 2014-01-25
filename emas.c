@@ -17,67 +17,144 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <getopt.h>
+
 #include "keywords.h"
 #include "parser.h"
 #include "prog.h"
 #include "lexer_utils.h"
 #include "writers.h"
 
+enum output_types {
+	O_DEBUG	= 1,
+	O_RAW	= 2,
+	O_EMELF	= 3,
+};
+
 int yyparse();
 int yylex_destroy();
+extern FILE *yyin;
+
+char *input_file;
+char *output_file;
+int otype = O_RAW;
+
+// -----------------------------------------------------------------------
+void usage()
+{
+	printf("Usage: emas [options] <input> [output]\n");
+	printf("Where options are one or more of:\n");
+	printf("   -v        : print version and exit\n");
+	printf("   -h        : print help and exit\n");
+	printf("   -O <type> : set output type: raw, debug, emelf (defaults to raw)\n");
+}
+
+// -----------------------------------------------------------------------
+int parse_args(int argc, char **argv)
+{
+	int option;
+	while ((option = getopt(argc, argv,"O:vh")) != -1) {
+		switch (option) {
+			case 'O':
+				if (!strcmp(optarg, "raw")) {
+					otype = O_RAW;
+				} else if (!strcmp(optarg, "debug")) {
+					otype = O_DEBUG;
+				} else if (!strcmp(optarg, "emelf")) {
+					otype = O_EMELF;
+				} else {
+					printf("Fatal: unknown output type: '%s'.\n", optarg);
+					return -1;
+				}
+				break;
+			case 'h':
+				usage();
+				exit(0);
+				break;
+			case 'v':
+				printf("EMAS v%s - modern MERA 400 assembler\n", EMAS_VERSION);
+				exit(0);
+				break;
+			default:
+				return -1;
+		}
+	}
+
+	if (optind == argc-1) {
+		input_file = argv[optind];
+	} else if (optind == argc-2) {
+		input_file = argv[optind];
+		output_file = argv[optind+1];
+	} else {
+		printf("Fatal: Wrong usage.\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 // -----------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-	int ret = 0;
+	int ret = 1;
 	int res;
+
+	res = parse_args(argc, argv);
+
+	if (res) {
+		printf("\n");
+		usage();
+		goto cleanup;
+	}
 
 	if (kw_init() < 0) {
 		printf("Fatal: Internal dictionary initialization failed.\n");
-		ret = 1;
 		goto cleanup;
 	}
 
 	sym = dh_create(16000, 1);
 	if (!sym) {
-		printf("Fatal: failed to create symbol table.\n");
-		ret = 1;
+		printf("Fatal: Failed to create symbol table.\n");
 		goto cleanup;
 	}
 
-	loc_push("(stdin)");
+	loc_push(input_file);
+
+	yyin = fopen(input_file, "r");
+	if (!yyin) {
+		printf("Fatal: Cannot open source file: '%s'\n", input_file);
+		goto cleanup;
+	}
 
 	if (yyparse()) {
-		printf("Parse failed.\n"); // parser should print appropriate error message
-		ret = 1;
+		fclose(yyin);
 		goto cleanup;
 	}
+
+	fclose(yyin);
 
 	if (!program) { // shouldn't happen - parser should always produce program (even empty one)
 		printf("Fatal: Parse produced empty tree.\n");
-		ret = 1;
 		goto cleanup;
 	}
 
 	res = assemble(program);
 
 	if (res < 0) {
-		printf("Fatal: Assemble failed.\n"); // assemble should print appropriate message
-		ret = 1;
 		goto cleanup;
 	}
 
 	if (res > 0) {
-		printf("Second pass (%i unresolved)\n", res);
 		res = assemble(program);
 		if (res) {
-			printf("Fatal: Second assemble pass failed (%i unresolved).\n", res); // assemble should print appropriate message
-			ret = 1;
 			goto cleanup;
 		}
 	}
 
-	writer_raw(program);
+	writer_raw(program, input_file, output_file);
+
+	ret = 0;
 
 cleanup:
 	yylex_destroy();

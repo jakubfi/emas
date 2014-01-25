@@ -21,7 +21,7 @@
 #include "st.h"
 
 int writer_debug(struct st *program);
-int writer_raw(struct st *program);
+int writer_raw(struct st *prog, char *ifile, char *ofile);
 
 #endif
 

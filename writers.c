@@ -55,10 +55,12 @@ char * int2binf(char *format, uint64_t value, int size)
 }
 
 // -----------------------------------------------------------------------
-int writer_debug(struct st *prog)
+int writer_debug(struct st *prog, char *ifile, char *ofile)
 {
 	struct st *t = prog->args;
 	char *bin;
+
+	printf("Input file: '%s'\n", ifile);
 
 	while (t) {
 		switch (t->type) {
@@ -87,45 +89,48 @@ int writer_debug(struct st *prog)
 }
 
 // -----------------------------------------------------------------------
-int writer_raw(struct st *prog)
+int writer_raw(struct st *prog, char *ifile, char *ofile)
 {
 	struct st *t = prog->args;
-	char *bin;
 	int icmax = 0;
+	FILE *f;
+	char *output;
 
-	uint16_t image[64 * 2 * 1024];
+	uint16_t *image = calloc(64 * 1024, sizeof(uint16_t));
 
 	while (t) {
 		switch (t->type) {
 			case INT:
 				if (t->ic > icmax) icmax = t->ic;
 				image[t->ic] = htons(t->val);
-				bin = int2binf("... ... . ... ... ...", t->val, 16);
-				printf("@ 0x%04x (0x%04x) : 0x%04x  /  %s  /  %i\n", t->ic, t->ic*2, t->val, bin, t->val);
-				free(bin);
 				break;
 			case BLOB:
 				for (int i=0 ; i<t->val ; i++) {
 					if (t->ic+i > icmax) icmax = t->ic+i;
 					image[t->ic+i] = htons(t->data[i]);
-					char *bin = int2binf("... ... . ... ... ...", t->data[i], 16);
-					printf("@ 0x%04x (0x%04x) : 0x%04x  /  %s  /  %i\n", t->ic+i, (t->ic+i)*2, t->data[i], bin, t->data[i]);
-					free(bin);
 				}
-				break;
-			case NONE:
-				//printf("@ 0x%04x : (none, type %d)\n", t->ic, t->type);
-				break;
-			default:
-				//printf("@ 0x%04x : unresolved\n", t->ic);
 				break;
 		}
 		t = t->next;
 	}
 
-	FILE *f = fopen("out.bin", "w");
+	if (ofile) {
+		output = strdup(ofile);
+	} else {
+		output = strdup("out.bin");
+	}
+
+	f = fopen(output, "w");
+
+	if (!f) {
+		free(image);
+		return 1;
+	}
+
 	fwrite(image, icmax+1, 2, f);
+
 	fclose(f);
+	free(image);
 
 	return 0;
 }
