@@ -10,15 +10,15 @@ TODO:
   * dumper
   * linker
 * rework lines/cols for better error handling
-* more detailed error descriptions
 * emelf/raw output
 * debug information in emelf
 * preprocessor
   * .macro
   * .alias
+  * .def
+  * .ifdef/.ifund
 
 TO CLARIFY:
 
-* co z nakładkami? (.ovl .len .max)
-* czy chcemy segmenty (.text, .bss, .data)?
-* jaki zakres widoczności symboli? (segmenty 'stare'?)
+* overlays? (.ovl .len .max)
+* segments? (.text, .bss, .data)

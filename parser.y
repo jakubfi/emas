@@ -117,7 +117,7 @@ typedef struct YYLTYPE {
 %left LSHIFT ">>"
 %left '+' '-'
 %left '*' '/' '%'
-%left SCALE "\\"
+%left '\\'
 %token '~'
 %nonassoc UMINUS "unary minus"
 %nonassoc NEG "~"
@@ -231,7 +231,7 @@ expr:
 	| expr '/' expr { $$ = st_arg('/', $1, $3, NULL); }
 	| expr '%' expr { $$ = st_arg('%', $1, $3, NULL); }
 	| '-' expr %prec UMINUS { $$ = st_arg(UMINUS, $2, NULL); }
-	| expr SCALE expr { $$ = st_arg(SCALE, $1, $3, NULL); }
+	| expr '\\' expr { $$ = st_arg('\\', $1, $3, NULL); }
 	| expr LSHIFT expr { $$ = st_arg(LSHIFT, $1, $3, NULL); }
 	| expr RSHIFT expr { $$ = st_arg(RSHIFT, $1, $3, NULL); }
 	| expr '&' expr { $$ = st_arg('&', $1, $3, NULL); }

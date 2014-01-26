@@ -41,6 +41,8 @@ int ic_max = 32767;
 // -----------------------------------------------------------------------
 int prog_cpu(char *cpu_name)
 {
+	assert(cpu_name);
+
 	int ret = 1;
 	if (cpu != CPU_DEFAULT) {
 		yyerror("CPU type already set");
@@ -63,7 +65,7 @@ int prog_cpu(char *cpu_name)
 // -----------------------------------------------------------------------
 void aaerror(struct st *t, char *format, ...)
 {
-	assert(t&&format);
+	assert(t && format);
 
 	va_list ap;
 
@@ -84,6 +86,11 @@ int eval_1arg(struct st *t)
 
 	u = eval(arg);
 	if (u) return u;
+
+	if ((t->type == '~') && (arg->relative)) {
+		aaerror(t, "Invalid argument type for operator: '%c' (%s)", t->type, arg->relative ? "relative" : "absolute");
+		return -1;
+	}
 
 	switch (t->type) {
 		case UMINUS:
@@ -118,7 +125,22 @@ int eval_2arg(struct st *t)
 	u2 = eval(arg2);
 	if (u2 < 0) return u2;
 
-	if (u1 || u2) return u1+u2;
+	if (u1 || u2) return 1;
+
+	if ((t->type != '+') && (t->type != '-') && ((arg1->relative) || (arg2->relative))) {
+		char oper[3];
+		if (t->type == LSHIFT) sprintf(oper, "<<");
+		else if (t->type == RSHIFT) sprintf(oper, ">>");
+		else sprintf(oper, "%c", t->type);
+		aaerror(t, "Invalid argument types for operator '%s': (%s, %s)", oper,
+			arg1->relative ? "relative" : "absolute",
+			arg2->relative ? "relative" : "absolute");
+		return -1;
+	} else if ((t->type == '-') && (arg1->relative) && (arg2->relative)) {
+		t->relative = 0;
+	} else {
+		t->relative = arg1->relative | arg2->relative;
+	}
 
 	switch (t->type) {
 		case '+':
@@ -151,16 +173,15 @@ int eval_2arg(struct st *t)
 		case RSHIFT:
 			t->val = arg1->val >> arg2->val;
 			break;
-		case SCALE:
+		case '\\':
 			t->val = arg1->val << (15-arg2->val);
 			break;
 		default:
-			aaerror(t, "Unknown operator: '%i (%c)'", t->type, t->type);
+			aaerror(t, "Unknown operator: #%s ('%c')", t->type, t->type);
 			return -1;
 	}
 
 	t->type = INT;
-	t->relative = arg1->relative | arg2->relative;;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -466,7 +487,7 @@ int eval_name(struct st *t)
 		t->val = s->value;
 	}
 
-	if (s->type && SYM_RELATIVE) {
+	if ((s->type & SYM_RELATIVE) || (s->t->relative)) {
 		t->relative = 1;
 	}
 
@@ -644,7 +665,7 @@ int eval(struct st *t)
 		case '|':
 		case LSHIFT:
 		case RSHIFT:
-		case SCALE:
+		case '\\':
 			return eval_2arg(t);
 		case UMINUS:
 		case '~':
@@ -721,7 +742,7 @@ int assemble(struct st *prog, int pass)
 		if (u < 0) {
 			return u;
 		}
-		if ((pass >0) && (u > 0)) {
+		if ((pass > 0) && (u > 0)) {
 			return -1;
 		}
 		uret += u;

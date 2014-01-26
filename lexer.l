@@ -174,7 +174,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 [-+:,\[\]<>\*/%()|^&~] return *yytext;
 "<<" return LSHIFT;
 ">>" return RSHIFT;
-"\\" return SCALE;
+"\\" return '\\';
 "." return CURLOC;
 
  /* ---- REGS ------------------------------------------------------- */
