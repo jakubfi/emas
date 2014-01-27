@@ -76,6 +76,23 @@ struct st * compose_norm(int type, int opcode, int reg, struct st *norm)
 }
 
 // -----------------------------------------------------------------------
+struct st * compose_list(int type, struct st *list)
+{
+	struct st *out = NULL;
+	struct st *l = list;
+	struct st *next;
+
+	while (l) {
+		next = l->next;
+		out = st_app(out, st_arg(type, l, NULL));
+		l->next = NULL;
+		l = next;
+	}
+
+	return out;
+}
+
+// -----------------------------------------------------------------------
 void aaerror(struct st *t, char *format, ...)
 {
 	assert(t && format);
@@ -249,71 +266,75 @@ int eval_float(struct st *t)
 }
 
 // -----------------------------------------------------------------------
+int eval_word(struct st *t)
+{
+	int u;
+
+	u = eval(t->args);
+
+	ic++;
+	if (u) {
+		return u;
+	}
+
+	switch (t->type) {
+		case P_WORD:
+		case P_RBYTE:
+			t->val = t->args->val;
+			break;
+		case P_LBYTE:
+			t->val <<= 8;
+			break;
+	}
+
+	t->type = INT;
+	st_drop(t->args);
+	t->args = t->last = NULL;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 int eval_multiword(struct st *t)
 {
 	int u;
-	int uret = 0;
 	struct st *arg = t->args;
-	int count = 0;
-	int chunk_size;
+	int chunk_size = 0;
 
 	switch (t->type) {
 		case P_DWORD: chunk_size = 2; break;
 		case P_FLOAT: chunk_size = 3; break;
-		default: chunk_size = 1; break;
+		default: assert(!"not a multiword"); break;
 	}
 
 	if (!t->data) {
-		t->data = malloc(DATA_MAX * chunk_size * sizeof(uint16_t));
+		t->data = malloc(chunk_size * sizeof(uint16_t));
 	}
 
-	while (arg) {
-		if (count >= DATA_MAX * chunk_size) {
-			aaerror(t, "Argument list too long (%d max)", DATA_MAX);
-			return -1;
-		}
+	ic += chunk_size;
 
-		u = eval(arg);
-
-		if (u < 0) {
-			return u;
-		} else if (u > 0) {
-			uret += u;
-		} else {
-			switch (t->type) {
-				case P_WORD:
-				case P_RBYTE:
-					t->data[count] = arg->val;
-					break;
-				case P_LBYTE:
-					t->data[count] <<= 8;
-					break;
-				case P_DWORD:
-					t->data[count] = arg->val >> 16;
-					t->data[count+1] = arg->val & 65535;
-					break;
-				case P_FLOAT:
-					t->data[count] = arg->data[0];
-					t->data[count+1] = arg->data[1];
-					t->data[count+2] = arg->data[2];
-					break;
-				default:
-					assert(0);
-					break;
-			}
-		}
-
-		ic += chunk_size;
-		count += chunk_size;
-		arg = arg->next;
+	u = eval(arg);
+	if (u) {
+		return u;
 	}
 
-	if (uret) {
-		return uret;
+	switch (t->type) {
+		case P_DWORD:
+			t->data[0] = arg->val >> 16;
+			t->data[1] = arg->val & 65535;
+			break;
+		case P_FLOAT:
+			t->data[0] = arg->data[0];
+			t->data[1] = arg->data[1];
+			t->data[2] = arg->data[2];
+			break;
+		default:
+			assert(!"not a multiword");
+			break;
 	}
 
 	t->type = BLOB;
-	t->val = count;
+	t->val = chunk_size;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -647,9 +668,10 @@ int eval(struct st *t)
 		case '~':
 			return eval_1arg(t);
 		case P_WORD:
-		case P_DWORD:
 		case P_LBYTE:
 		case P_RBYTE:
+			return eval_word(t);
+		case P_DWORD:
 		case P_FLOAT:
 			return eval_multiword(t);
 		case P_RES:

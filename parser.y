@@ -202,11 +202,11 @@ pragma:
 	| P_FILE string { $$ = NULL; loc_file($2); }
 	| P_EQU name expr { $$ = $2; $$->type = P_EQU; st_arg_app($$, $3); }
 	| P_CONST NAME expr { $$ = st_arg(P_CONST, $2, $3); }
-	| P_LBYTE exprs { $$ = st_arg(P_LBYTE, $2, NULL); }
-	| P_RBYTE exprs { $$ = st_arg(P_RBYTE, $2, NULL); }
-	| P_WORD exprs { $$ = st_arg(P_WORD, $2, NULL); }
-	| P_DWORD exprs { $$ = st_arg(P_DWORD, $2, NULL); }
-	| P_FLOAT floats { $$ = st_arg(P_FLOAT, $2, NULL); }
+	| P_LBYTE exprs { $$ = compose_list(P_LBYTE, $2); }
+	| P_RBYTE exprs { $$ = compose_list(P_RBYTE, $2); }
+	| P_WORD exprs { $$ = compose_list(P_WORD, $2); }
+	| P_DWORD exprs { $$ = compose_list(P_DWORD, $2); }
+	| P_FLOAT floats { $$ = compose_list(P_FLOAT, $2); }
 	| P_ASCII string { $$ = st_str(P_ASCII, $2); }
 	| P_ASCIIZ string { $$ = st_str(P_ASCIIZ, $2); }
 	| P_RES expr { $$ = st_arg(P_RES, $2, NULL); }

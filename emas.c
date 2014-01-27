@@ -154,7 +154,17 @@ int main(int argc, char **argv)
 		}
 	}
 
-	writer_raw(program, input_file, output_file);
+	switch (otype) {
+		case O_RAW:
+			writer_raw(program, input_file, output_file);
+			break;
+		case O_DEBUG:
+			writer_debug(program, input_file, output_file);
+			break;
+		default:
+			printf("Unknown output type.\n");
+			goto cleanup;
+	}
 
 	ret = 0;
 

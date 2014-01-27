@@ -20,7 +20,7 @@
 
 #include "st.h"
 
-int writer_debug(struct st *program);
+int writer_debug(struct st *prog, char *ifile, char *ofile);
 int writer_raw(struct st *prog, char *ifile, char *ofile);
 
 #endif
