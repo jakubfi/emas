@@ -354,8 +354,10 @@ int eval_res(struct st *t)
 		value = t->args->next->val;
 	}
 
-	t->data = malloc(t->size * sizeof(uint16_t));
-	for (int i=0 ; i<t->size ; i++) t->data[i] = value;
+	if (!t->data) {
+		t->data = malloc(t->size * sizeof(uint16_t));
+		for (int i=0 ; i<t->size ; i++) t->data[i] = value;
+	}
 
 	t->type = N_BLOB;
 	st_drop(t->args);
@@ -384,37 +386,36 @@ int eval_org(struct st *t)
 int eval_string(struct st *t)
 {
 	char *s = t->str;
-	int len = strlen(s);
+	int left = strlen(s);
 	int pos = 1; // start with left byte
-	int count = 0;
 
-	if (t->type == N_ASCIIZ) len++;
+	if (t->type == N_ASCIIZ) left++;
 
 	if (!t->data) {
-		t->data = malloc((len+1)/2);
+		t->data = malloc((left+1)/2);
 	}
 
+	t->size = 0;
+
 	// append each double-character as value
-	while (s && (len > 0)) {
+	while (s && (left > 0)) {
 		if (pos == 1) {
-			t->data[count] = (*s) << 8;
+			t->data[t->size] = (*s) << 8;
 		} else {
-			t->data[count] += *s;
+			t->data[t->size] += *s;
 		}
 
 		pos *= -1;
 		s++;
-		len--;
+		left--;
 
 		// flush
-		if ((pos == 1) || (len <= 0)) {
+		if ((pos == 1) || (left <= 0)) {
 			t->size++;
-			count++;
 		}
 	}
 
 	t->type = N_BLOB;
-	t->val = count;
 
 	return 0;
 }
