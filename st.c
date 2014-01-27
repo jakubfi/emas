@@ -54,8 +54,8 @@ struct st * st_new(int type, int val, double flo, char *str, struct st *args)
 	} else {
 		sx->loc_file = NULL;
 	}
-	sx->loc_line = yylloc.last_line;
-	sx->loc_col = yylloc.last_column;
+	sx->loc_line = yylloc.first_line;
+	sx->loc_col = yylloc.first_column;
 
 	return sx;
 }

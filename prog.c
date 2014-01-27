@@ -99,7 +99,7 @@ void aaerror(struct st *t, char *format, ...)
 
 	va_list ap;
 
-	int len = snprintf(aerr, MAX_ERRLEN, "%s: Error at line %d column %d: ", t->loc_file, t->loc_line, t->loc_col);
+	int len = snprintf(aerr, MAX_ERRLEN, "%s:%d:%d: ", t->loc_file, t->loc_line, t->loc_col);
 
 	if (len && (len<MAX_ERRLEN)) {
 		va_start(ap, format);

@@ -15,6 +15,9 @@
 //  Foundation, Inc.,
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+#ifndef PROG_H
+#define PROG_H
+
 #include <inttypes.h>
 
 #include "dh.h"
@@ -43,8 +46,9 @@ enum sym_types {
 int prog_cpu(char *cpu_name);
 struct st * compose_norm(int type, int opcode, int reg, struct st *norm);
 struct st * compose_list(int type, struct st *list);
+int eval(struct st *t);
 int assemble(struct st *prog, int pass);
 
-int eval(struct st *t);
+#endif
 
 // vim: tabstop=4 autoindent

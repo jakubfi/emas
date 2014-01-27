@@ -59,7 +59,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 
  /* ---- JUNK ------------------------------------------------------------ */
 
-{nl}	{ loc_stack[loc_pos].yycolumn = 1; }
+{nl}
 <INITIAL,p_line,p_include>{ws}
 <INITIAL,p_line,p_include>{cmt}
 <INITIAL,p_line,p_include>"/*" { BEGIN(comment); }

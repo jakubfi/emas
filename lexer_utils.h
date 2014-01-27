@@ -23,19 +23,13 @@ extern int yylineno;
 #define STR_MAX 1024
 #define INCLUDE_MAX 32
 
-#define YY_USER_ACTION \
-	yylloc.filename = loc_stack[loc_pos].yyfilename; \
-	yylloc.first_line = yylloc.last_line = yylineno; \
-	yylloc.first_column = loc_stack[loc_pos].yycolumn; \
-	if (yylineno != loc_stack[loc_pos].o_yylineno) loc_stack[loc_pos].yycolumn = 1; \
-	else loc_stack[loc_pos].yycolumn += yyleng; \
-	yylloc.last_column = loc_stack[loc_pos].yycolumn; \
+#define YY_USER_ACTION loc_update(yyleng);
 
 struct loc {
-	int yycolumn;
+	char *filename;
+	int line, col;
+	int oline, ocol;
 	int yylineno;
-	int o_yylineno;
-	char *yyfilename;
 };
 
 struct loc loc_stack[INCLUDE_MAX+1];
@@ -51,6 +45,7 @@ int flag2mask(char c);
 int lex_int(char *str, int offset, int base, int *val);
 int lex_float(char *str, double *val);
 int str_append(char c);
+void loc_update(int len);
 int loc_push(char *fname);
 int loc_pop();
 int loc_file(char *fname);

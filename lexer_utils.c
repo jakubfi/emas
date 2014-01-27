@@ -36,7 +36,7 @@ void llerror(char *s, ...)
 {
 	va_list ap;
 	va_start(ap, s);
-	printf("%s: Error at line %d column %d: ", loc_stack[loc_pos].yyfilename, yylineno, loc_stack[loc_pos].yycolumn);
+	printf("%s:%d:%d: ", loc_stack[loc_pos].filename, loc_stack[loc_pos].oline, loc_stack[loc_pos].ocol);
 	vprintf(s, ap);
 	printf("\n");
 	va_end(ap);
@@ -116,6 +116,25 @@ int str_append(char c)
 }
 
 // -----------------------------------------------------------------------
+void loc_update(int len)
+{
+	loc_stack[loc_pos].oline = loc_stack[loc_pos].line;
+	loc_stack[loc_pos].line = yylineno;
+	loc_stack[loc_pos].ocol = loc_stack[loc_pos].col;
+	if (loc_stack[loc_pos].oline != loc_stack[loc_pos].line) {
+		loc_stack[loc_pos].col = 1;
+	} else {
+		loc_stack[loc_pos].col += len;
+	}
+
+	yylloc.filename = loc_stack[loc_pos].filename;
+	yylloc.first_line = loc_stack[loc_pos].oline;
+	yylloc.last_line = loc_stack[loc_pos].line;
+	yylloc.first_column = loc_stack[loc_pos].ocol;
+	yylloc.last_column = loc_stack[loc_pos].col;
+}
+
+// -----------------------------------------------------------------------
 int loc_push(char *fname)
 {
 	if (loc_pos > INCLUDE_MAX) {
@@ -126,10 +145,14 @@ int loc_push(char *fname)
 	filenames = st_app(filenames, cfname);
 
 	loc_pos++;
-	loc_stack[loc_pos].yycolumn = 1;
+
+	loc_stack[loc_pos].filename = cfname->str;
+	loc_stack[loc_pos].col = 1;
+	loc_stack[loc_pos].line = 1;
+	loc_stack[loc_pos].ocol = 1;
+	loc_stack[loc_pos].oline = 1;
+
 	loc_stack[loc_pos].yylineno = yylineno;
-	loc_stack[loc_pos].o_yylineno = 1;
-	loc_stack[loc_pos].yyfilename = cfname->str;
 	yylineno = 1;
 
 	return 0;
@@ -152,7 +175,7 @@ int loc_file(char *fname)
 {
 	struct st *cfname = st_str(0, fname);
 	filenames = st_app(filenames, cfname);
-	loc_stack[loc_pos].yyfilename = cfname->str;
+	loc_stack[loc_pos].filename = cfname->str;
 	return 0;
 }
 

@@ -281,7 +281,7 @@ void yyerror(char *s, ...)
 {
 	va_list ap;
 	va_start(ap, s);
-	printf("%s: Error at line %d column %d: ", yylloc.filename, yylloc.first_line, yylloc.first_column);
+	printf("%s:%d:%d: ", yylloc.filename, yylloc.first_line, yylloc.first_column);
 	vprintf(s, ap);
 	printf("\n");
 	va_end(ap);

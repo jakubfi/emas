@@ -2,7 +2,6 @@ BUGS:
 
 TODO:
 
-* rework lines/cols for better error handling
 * .global
 * .entry
 * integer underflow/overflow handling (or not)

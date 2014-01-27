@@ -123,12 +123,12 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	loc_push(input_file);
-
 	if (input_file) {
 		yyin = fopen(input_file, "r");
+		loc_push(input_file);
 	} else {
 		yyin = stdin;
+		loc_push("(stdin)");
 	}
 
 	if (!yyin) {

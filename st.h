@@ -20,8 +20,6 @@
 
 #include <inttypes.h>
 
-#define DATA_MAX 256
-
 struct st {
 	int type;
 
