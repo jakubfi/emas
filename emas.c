@@ -43,7 +43,7 @@ int otype = O_RAW;
 // -----------------------------------------------------------------------
 void usage()
 {
-	printf("Usage: emas [options] <input> [output]\n");
+	printf("Usage: emas [options] [input [output]]\n");
 	printf("Where options are one or more of:\n");
 	printf("   -v        : print version and exit\n");
 	printf("   -h        : print help and exit\n");
@@ -81,8 +81,12 @@ int parse_args(int argc, char **argv)
 		}
 	}
 
-	if (optind == argc-1) {
+	if (optind == argc) {
+		input_file = NULL;
+		output_file = NULL;
+	} else if (optind == argc-1) {
 		input_file = argv[optind];
+		output_file = NULL;
 	} else if (optind == argc-2) {
 		input_file = argv[optind];
 		output_file = argv[optind+1];
@@ -121,7 +125,12 @@ int main(int argc, char **argv)
 
 	loc_push(input_file);
 
-	yyin = fopen(input_file, "r");
+	if (input_file) {
+		yyin = fopen(input_file, "r");
+	} else {
+		yyin = stdin;
+	}
+
 	if (!yyin) {
 		printf("Cannot open source file: '%s'\n", input_file);
 		goto cleanup;
@@ -156,12 +165,17 @@ int main(int argc, char **argv)
 
 	switch (otype) {
 		case O_RAW:
-			writer_raw(program, input_file, output_file);
+			res = writer_raw(program, input_file, output_file);
 			break;
 		case O_DEBUG:
-			writer_debug(program, input_file, output_file);
+			res = writer_debug(program, input_file, output_file);
 			break;
+		case O_EMELF:
+			res = 0;
+			printf("Output type 'emelf' is yet to be implemented.\n");
+			goto cleanup;
 		default:
+			res = 0;
 			printf("Unknown output type.\n");
 			goto cleanup;
 	}
