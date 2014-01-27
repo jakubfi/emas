@@ -25,10 +25,13 @@
 
 #define MAX_ERRLEN 1024
 
+typedef int (*eval_fun)(struct st *t);
+
 extern struct dh_table *sym;
 extern struct st *program;
 extern int cpu;
 extern char aerr[MAX_ERRLEN+1];
+extern int ic_max;
 
 enum cpu_types {
 	CPU_DEFAULT = 0,
@@ -43,9 +46,83 @@ enum sym_types {
 	SYM_LOCAL		= 0b00001000,
 };
 
-int prog_cpu(char *cpu_name);
-struct st * compose_norm(int type, int opcode, int reg, struct st *norm);
-struct st * compose_list(int type, struct st *list);
+enum node_types {
+	N_NONE = 0,
+	N_INT,
+	N_BLOB,
+	N_FLO,
+	N_PLUS,
+	N_MINUS,
+	N_MUL,
+	N_DIV,
+	N_REM,
+	N_AND,
+	N_XOR,
+	N_OR,
+	N_LSHIFT,
+	N_RSHIFT,
+	N_SCALE,
+	N_UMINUS,
+	N_NEG,
+	N_WORD,
+	N_LBYTE,
+	N_RBYTE,
+	N_DWORD,
+	N_FLOAT,
+	N_RES,
+	N_ORG,
+	N_ASCII,
+	N_ASCIIZ,
+	N_ENTRY,
+	N_GLOBAL,
+	N_LABEL,
+	N_EQU,
+	N_CONST,
+	N_NAME,
+	N_CURLOC,
+	N_OP_X,
+	N_OP_RN,
+	N_OP_N,
+	N_OP_R,
+	N_OP__,
+	N_OP_RT,
+	N_OP_T,
+	N_OP_SHC,
+	N_OP_BLC,
+	N_OP_BRC,
+	N_OP_EXL,
+	N_OP_NRF,
+	N_OP_HLT,
+	N_PROG,
+	N_NORM,
+	N_MAX,
+};
+
+struct eval_t {
+	char *name;
+	eval_fun fun;
+};
+
+int eval_1arg(struct st *t);
+int eval_2arg(struct st *t);
+int eval_float(struct st *t);
+int eval_word(struct st *t);
+int eval_multiword(struct st *t);
+int eval_res(struct st *t);
+int eval_org(struct st *t);
+int eval_string(struct st *t);
+int eval_label(struct st *t);
+int eval_equ(struct st *t);
+int eval_const(struct st *t);
+int eval_name(struct st *t);
+int eval_curloc(struct st *t);
+int eval_as_short(struct st *t, int type, int op);
+int eval_op_short(struct st *t);
+int eval_op_mx16(struct st *t);
+int eval_op_noarg(struct st *t);
+int eval_none(struct st *t);
+int eval_err(struct st *t);
+
 int eval(struct st *t);
 int assemble(struct st *prog, int pass);
 

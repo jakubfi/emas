@@ -20,6 +20,7 @@ emas.c
 ${BISON_parser_OUTPUTS}
 ${FLEX_lexer_OUTPUTS}
 lexer_utils.c
+parser_utils.c
 prog.c
 dh.c
 st.c

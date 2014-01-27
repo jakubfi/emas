@@ -23,7 +23,6 @@
 #include "parser.h"
 #include "lexer_utils.h"
 #include "keywords.h"
-#include "prog.h"
 
 %}
 
@@ -34,6 +33,7 @@
 %x str
 %x p_include
 %x p_line
+%x p_file
 %s comment
 
 nl		(\n)|(\r\n)|(\f)|(\v)
@@ -199,6 +199,9 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 		case P_LINE:
 			BEGIN(p_line);
 			break;
+		case P_FILE:
+			BEGIN(p_file);
+			break;
 		default:
 			return p->type;
 	}
@@ -217,6 +220,16 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 <p_line>[0-9]+ {
 	BEGIN(INITIAL);
 	yylineno = strtol(yytext, NULL, 10) - 1;
+}
+
+<p_file>{nl} {
+	BEGIN(INITIAL);
+	llerror("Missing file name");
+	return INVALID_PRAGMA;
+}
+<p_file>[a-zA-Z0-9_.-]+ {
+	BEGIN(INITIAL);
+	loc_file(yytext);
 }
 
 <p_include>{nl} {

@@ -20,7 +20,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#include "parser.h"
+#include "prog.h"
 #include "st.h"
 
 // -----------------------------------------------------------------------
@@ -64,19 +64,19 @@ int writer_debug(struct st *prog, char *ifile, char *ofile)
 
 	while (t) {
 		switch (t->type) {
-			case INT:
+			case N_INT:
 				bin = int2binf("... ... . ... ... ...", t->val, 16);
 				printf("@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic, t->val, bin, t->val);
 				free(bin);
 				break;
-			case BLOB:
-				for (int i=0 ; i<t->val ; i++) {
+			case N_BLOB:
+				for (int i=0 ; i<t->size ; i++) {
 					char *bin = int2binf("... ... . ... ... ...", t->data[i], 16);
 					printf("@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic+i, t->data[i], bin, t->data[i]);
 					free(bin);
 				}
 				break;
-			case NONE:
+			case N_NONE:
 				printf("@ 0x%04x : (none, type %d)\n", t->ic, t->type);
 				break;
 			default:
@@ -100,12 +100,12 @@ int writer_raw(struct st *prog, char *ifile, char *ofile)
 
 	while (t) {
 		switch (t->type) {
-			case INT:
+			case N_INT:
 				if (t->ic > icmax) icmax = t->ic;
 				image[t->ic] = htons(t->val);
 				break;
-			case BLOB:
-				for (int i=0 ; i<t->val ; i++) {
+			case N_BLOB:
+				for (int i=0 ; i<t->size ; i++) {
 					if (t->ic+i > icmax) icmax = t->ic+i;
 					image[t->ic+i] = htons(t->data[i]);
 				}

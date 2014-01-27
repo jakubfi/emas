@@ -20,13 +20,11 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <strings.h>
 #include <math.h>
 #include <inttypes.h>
 
 #include "dh.h"
 #include "st.h"
-#include "parser.h"
 #include "prog.h"
 
 struct dh_table *sym;
@@ -38,59 +36,58 @@ int ic;
 int cpu = CPU_DEFAULT;
 int ic_max = 32767;
 
-// -----------------------------------------------------------------------
-int prog_cpu(char *cpu_name)
-{
-	assert(cpu_name);
-
-	int ret = 1;
-	if (cpu != CPU_DEFAULT) {
-		yyerror("CPU type already set");
-		ret = 0;
-	} else {
-		if (!strcasecmp(cpu_name, "mera400")) {
-			cpu = CPU_MERA400;
-		} else if (!strcasecmp(cpu_name, "mx16")) {
-			cpu = CPU_MX16;
-			ic_max = 65535;
-		} else {
-			yyerror("Unknown CPU type '%s'", cpu_name);
-			ret = 0;
-		}
-	}
-
-	return ret;
-}
-
-// -----------------------------------------------------------------------
-struct st * compose_norm(int type, int opcode, int reg, struct st *norm)
-{
-	struct st *op = st_int(type, opcode | reg | norm->val);
-	struct st *data = NULL;
-	if (norm->args) {
-		data = st_arg(P_WORD, norm->args, NULL);
-		norm->args = NULL;
-	}
-	st_drop(norm);
-	return st_app(op, data);
-}
-
-// -----------------------------------------------------------------------
-struct st * compose_list(int type, struct st *list)
-{
-	struct st *out = NULL;
-	struct st *l = list;
-	struct st *next;
-
-	while (l) {
-		next = l->next;
-		out = st_app(out, st_arg(type, l, NULL));
-		l->next = NULL;
-		l = next;
-	}
-
-	return out;
-}
+// table indexed by node type, order here must match enum node_types
+static struct eval_t eval_tab[] = {
+	{ "NONE",	eval_none },
+	{ "INT",	eval_none },
+	{ "BLOB",	eval_none },
+	{ "FLOAT",	eval_float },
+	{ "+",		eval_2arg },
+	{ "-",		eval_2arg },
+	{ "*",		eval_2arg },
+	{ "/",		eval_2arg },
+	{ "%",		eval_2arg },
+	{ "&",		eval_2arg },
+	{ "^",		eval_2arg },
+	{ "|",		eval_2arg },
+	{ "<<",		eval_2arg },
+	{ ">>",		eval_2arg },
+	{ "\\",		eval_2arg },
+	{ "- (unary)",eval_1arg },
+	{ "~",		eval_1arg },
+	{ ".word",	eval_word },
+	{ ".lbyte",	eval_word },
+	{ ".rbyte",	eval_word },
+	{ ".dword",	eval_multiword },
+	{ ".float",	eval_multiword },
+	{ ".res",	eval_res },
+	{ ".org",	eval_org },
+	{ ".ascii",	eval_string },
+	{ ".asciiz",eval_string },
+	{ ".entry",	eval_none },
+	{ ".global",eval_none },
+	{ "LABEL",	eval_label },
+	{ ".equ",	eval_equ },
+	{ ".const",	eval_const },
+	{ "NAME",	eval_name },
+	{ ".",		eval_curloc },
+	{ "OP MX16",eval_op_mx16 },
+	{ "OP (RN)",eval_op_noarg },
+	{ "OP (N)",	eval_op_noarg },
+	{ "OP (R)",	eval_op_noarg },
+	{ "OP noarg",eval_op_noarg },
+	{ "OP (R,T)",eval_op_short },
+	{ "OP (T)",	eval_op_short },
+	{ "SHC",	eval_op_short },
+	{ "BLC",	eval_op_short },
+	{ "BRC",	eval_op_short },
+	{ "EXL",	eval_op_short },
+	{ "NRF",	eval_op_short },
+	{ "HLT",	eval_op_short },
+	{ "PROG",	eval_err },
+	{ "NORM",	eval_err },
+	{ "(max)",	eval_err }
+};
 
 // -----------------------------------------------------------------------
 void aaerror(struct st *t, char *format, ...)
@@ -117,24 +114,24 @@ int eval_1arg(struct st *t)
 	u = eval(arg);
 	if (u) return u;
 
-	if ((t->type == '~') && (arg->relative)) {
-		aaerror(t, "Invalid argument type for operator: '%c' (%s)", t->type, arg->relative ? "relative" : "absolute");
+	if ((t->type == N_NEG) && (arg->relative)) {
+		aaerror(t, "Invalid argument type for operator '%s': (%s)", eval_tab[t->type].name, arg->relative ? "relative" : "absolute");
 		return -1;
 	}
 
 	switch (t->type) {
-		case UMINUS:
+		case N_UMINUS:
 			t->val = -arg->val;
 			break;
-		case '~':
+		case N_NEG:
 			t->val = ~arg->val;
 			break;
 		default:
-			aaerror(t, "Unknown operator: #%d ('%c')", t->type, t->type);
+			assert(!"unknown 1-arg operator node");
 			return -1;
 	}
 
-	t->type = INT;
+	t->type = N_INT;
 	t->relative = arg->relative;
 	st_drop(arg);
 	t->args = t->last = NULL;
@@ -157,61 +154,58 @@ int eval_2arg(struct st *t)
 
 	if (u1 || u2) return 1;
 
-	if ((t->type != '+') && (t->type != '-') && ((arg1->relative) || (arg2->relative))) {
-		char oper[3];
-		if (t->type == LSHIFT) sprintf(oper, "<<");
-		else if (t->type == RSHIFT) sprintf(oper, ">>");
-		else sprintf(oper, "%c", t->type);
-		aaerror(t, "Invalid argument types for operator '%s': (%s, %s)", oper,
+	if ((t->type != N_PLUS) && (t->type != N_MINUS) && ((arg1->relative) || (arg2->relative))) {
+		aaerror(t, "Invalid argument types for operator '%s': (%s, %s)",
+			eval_tab[t->type].name,
 			arg1->relative ? "relative" : "absolute",
 			arg2->relative ? "relative" : "absolute");
 		return -1;
-	} else if ((t->type == '-') && (arg1->relative) && (arg2->relative)) {
+	} else if ((t->type == N_MINUS) && (arg1->relative) && (arg2->relative)) {
 		t->relative = 0;
 	} else {
 		t->relative = arg1->relative | arg2->relative;
 	}
 
 	switch (t->type) {
-		case '+':
+		case N_PLUS:
 			t->val = arg1->val + arg2->val;
 			break;
-		case '-':
+		case N_MINUS:
 			t->val = arg1->val - arg2->val;
 			break;
-		case '*':
+		case N_MUL:
 			t->val = arg1->val * arg2->val;
 			break;
-		case '/':
+		case N_DIV:
 			t->val = arg1->val / arg2->val;
 			break;
-		case '%':
+		case N_REM:
 			t->val = arg1->val % arg2->val;
 			break;
-		case '&':
+		case N_AND:
 			t->val = arg1->val & arg2->val;
 			break;
-		case '^':
+		case N_XOR:
 			t->val = arg1->val ^ arg2->val;
 			break;
-		case '|':
+		case N_OR:
 			t->val = arg1->val | arg2->val;
 			break;
-		case LSHIFT:
+		case N_LSHIFT:
 			t->val = arg1->val << arg2->val;
 			break;
-		case RSHIFT:
+		case N_RSHIFT:
 			t->val = arg1->val >> arg2->val;
 			break;
-		case '\\':
+		case N_SCALE:
 			t->val = arg1->val << (15-arg2->val);
 			break;
 		default:
-			aaerror(t, "Unknown operator: #%s ('%c')", t->type, t->type);
+			assert(!"unknown 2-arg operator");
 			return -1;
 	}
 
-	t->type = INT;
+	t->type = N_INT;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -270,24 +264,24 @@ int eval_word(struct st *t)
 {
 	int u;
 
-	u = eval(t->args);
+	t->size = 1;
 
-	ic++;
+	u = eval(t->args);
 	if (u) {
 		return u;
 	}
 
 	switch (t->type) {
-		case P_WORD:
-		case P_RBYTE:
+		case N_WORD:
+		case N_RBYTE:
 			t->val = t->args->val;
 			break;
-		case P_LBYTE:
+		case N_LBYTE:
 			t->val <<= 8;
 			break;
 	}
 
-	t->type = INT;
+	t->type = N_INT;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -299,19 +293,16 @@ int eval_multiword(struct st *t)
 {
 	int u;
 	struct st *arg = t->args;
-	int chunk_size = 0;
 
 	switch (t->type) {
-		case P_DWORD: chunk_size = 2; break;
-		case P_FLOAT: chunk_size = 3; break;
+		case N_DWORD: t->size = 2; break;
+		case N_FLOAT: t->size = 3; break;
 		default: assert(!"not a multiword"); break;
 	}
 
 	if (!t->data) {
-		t->data = malloc(chunk_size * sizeof(uint16_t));
+		t->data = malloc(t->size * sizeof(uint16_t));
 	}
-
-	ic += chunk_size;
 
 	u = eval(arg);
 	if (u) {
@@ -319,11 +310,11 @@ int eval_multiword(struct st *t)
 	}
 
 	switch (t->type) {
-		case P_DWORD:
+		case N_DWORD:
 			t->data[0] = arg->val >> 16;
 			t->data[1] = arg->val & 65535;
 			break;
-		case P_FLOAT:
+		case N_FLOAT:
 			t->data[0] = arg->data[0];
 			t->data[1] = arg->data[1];
 			t->data[2] = arg->data[2];
@@ -333,8 +324,7 @@ int eval_multiword(struct st *t)
 			break;
 	}
 
-	t->type = BLOB;
-	t->val = chunk_size;
+	t->type = N_BLOB;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -345,7 +335,6 @@ int eval_multiword(struct st *t)
 int eval_res(struct st *t)
 {
 	int u;
-	int count;
 	int value = 0;
 
 	// first, we need element count
@@ -354,8 +343,7 @@ int eval_res(struct st *t)
 		return -1;
 	}
 
-	count = t->args->val;
-	ic += count;
+	t->size = t->args->val;
 
 	// then, check if user specified a value to fill with
 	if (t->args->next) {
@@ -366,11 +354,10 @@ int eval_res(struct st *t)
 		value = t->args->next->val;
 	}
 
-	t->data = malloc(count * sizeof(uint16_t));
-	for (int i=0 ; i<count ; i++) t->data[i] = value;
+	t->data = malloc(t->size * sizeof(uint16_t));
+	for (int i=0 ; i<t->size ; i++) t->data[i] = value;
 
-	t->type = BLOB;
-	t->val = count;
+	t->type = N_BLOB;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -386,7 +373,7 @@ int eval_org(struct st *t)
 	}
 
 	ic = t->args->val;
-	t->type = NONE;
+	t->type = N_NONE;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -401,7 +388,7 @@ int eval_string(struct st *t)
 	int pos = 1; // start with left byte
 	int count = 0;
 
-	if (t->type == P_ASCIIZ) len++;
+	if (t->type == N_ASCIIZ) len++;
 
 	if (!t->data) {
 		t->data = malloc((len+1)/2);
@@ -421,12 +408,12 @@ int eval_string(struct st *t)
 
 		// flush
 		if ((pos == 1) || (len <= 0)) {
-			ic++;
+			t->size++;
 			count++;
 		}
 	}
 
-	t->type = BLOB;
+	t->type = N_BLOB;
 	t->val = count;
 
 	return 0;
@@ -442,7 +429,7 @@ int eval_label(struct st *t)
 
 	dh_addv(sym, t->str, SYM_RELATIVE | SYM_CONST | SYM_LOCAL, ic);
 
-	t->type = NONE;
+	t->type = N_NONE;
 
 	return 0;
 }
@@ -469,7 +456,7 @@ int eval_equ(struct st *t)
 
 	dh_addt(sym, t->str, SYM_LOCAL, t->args);
 
-	t->type = NONE;
+	t->type = N_NONE;
 	t->args = NULL;
 
 	return 0;
@@ -492,7 +479,7 @@ int eval_const(struct st *t)
 
 	dh_addt(sym, t->str, SYM_LOCAL | SYM_CONST, t->args);
 
-	t->type = NONE;
+	t->type = N_NONE;
 	t->args = NULL;
 
 	return 0;
@@ -523,7 +510,7 @@ int eval_name(struct st *t)
 		t->relative = 1;
 	}
 
-	t->type = INT;
+	t->type = N_INT;
 
 	return 0;
 }
@@ -531,7 +518,7 @@ int eval_name(struct st *t)
 // -----------------------------------------------------------------------
 int eval_curloc(struct st *t)
 {
-	t->type = INT;
+	t->type = N_INT;
 	t->val = ic;
 	t->relative = 1;
 	return 0;
@@ -549,26 +536,26 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	switch (type) {
-		case OP_SHC:
+		case N_OP_SHC:
 			min = 0; max = 15;
 			break;
-		case OP_T:
+		case N_OP_T:
 			min = -63; max = 63;
 			rel_op = 1;
 			break;
-		case OP_RT:
+		case N_OP_RT:
 			min = -63; max = 63;
 			// relative argument with instruction that use relative addresses?
 			// IRB, DRB, LWS, RWS use adresses relative to IC
 			opl = (op >> 10) & 0b111;
 			rel_op = ((opl == 0b010) || (opl == 0b011) || (opl == 0b110) || (opl == 0b111)) ? 1 : 0;
 			break;
-		case OP_HLT:
+		case N_OP_HLT:
 			min = -63; max = 63;
 			break;
-		case OP_BRC:
-		case OP_EXL:
-		case OP_NRF:
+		case N_OP_BRC:
+		case N_OP_EXL:
+		case N_OP_NRF:
 			min = 0; max = 255;
 		default:
 			min = -32768; max = 65535;
@@ -576,11 +563,11 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if (rel_op && t->relative) {
-		t->val -= ic;
+		t->val -= ic+1;
 	}
 
 	if ((t->val < min) || (t->val > max)) {
-		aaerror(t, "Short argument value %i out of range (%i..%i)", t->val, min, max);
+		aaerror(t, "Argument value %i for %s out of range (%i..%i)", t->val, eval_tab[t->type].name, min, max);
 		return -1;
 	}
 
@@ -593,7 +580,7 @@ int eval_op_short(struct st *t)
 	int u;
 	struct st *arg = t->args;
 
-	ic++;
+	t->size = 1;
 
 	u = eval_as_short(arg, t->type, t->val);
 	if (u) {
@@ -601,18 +588,18 @@ int eval_op_short(struct st *t)
 	}
 
 	switch (t->type) {
-		case OP_SHC:
+		case N_OP_SHC:
 			arg->val = (arg->val & 0b111) | ((arg->val & 0b1000) << 6);
 			break;
-		case OP_T:
-		case OP_RT:
-		case OP_HLT:
+		case N_OP_T:
+		case N_OP_RT:
+		case N_OP_HLT:
 			if (arg->val < 0) {
 				arg->val = -arg->val;
 				arg->val |= 0b0000001000000000;
 			}
 			break;
-		case OP_BLC:
+		case N_OP_BLC:
 			if (arg->val & 255) {
 				aaerror(t, "Lower byte for BLC argument is not 0");
 				return -1;
@@ -623,7 +610,7 @@ int eval_op_short(struct st *t)
 			break;
 	}
 
-	t->type = INT;
+	t->type = N_INT;
 	t->val |= arg->val;
 	st_drop(arg);
 	t->args = t->last = NULL;
@@ -632,91 +619,46 @@ int eval_op_short(struct st *t)
 }
 
 // -----------------------------------------------------------------------
+int eval_op_mx16(struct st *t)
+{
+	if (cpu != CPU_MX16) {
+		aaerror(t, "Instruction valid only for MX-16");
+		return -1;
+	} else {
+		return eval_op_noarg(t);
+	}
+}
+
+// -----------------------------------------------------------------------
 int eval_op_noarg(struct st *t)
 {
-	t->type = INT;
-	ic++;
+	t->type = N_INT;
+	t->size = 1;
 
 	return 0;
 }
 
 // -----------------------------------------------------------------------
+int eval_none(struct st *t)
+{
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_err(struct st *t)
+{
+	aaerror(t, "Cannot eval node type %i", t->type);
+	return -1;
+}
+
+// -----------------------------------------------------------------------
 int eval(struct st *t)
 {
-	assert(t);
-
-	switch (t->type) {
-		case NONE:
-		case INT:
-		case BLOB:
-			return 0;
-		case FLOAT:
-			return eval_float(t);
-		case '+':
-		case '-':
-		case '*':
-		case '/':
-		case '%':
-		case '&':
-		case '^':
-		case '|':
-		case LSHIFT:
-		case RSHIFT:
-		case '\\':
-			return eval_2arg(t);
-		case UMINUS:
-		case '~':
-			return eval_1arg(t);
-		case P_WORD:
-		case P_LBYTE:
-		case P_RBYTE:
-			return eval_word(t);
-		case P_DWORD:
-		case P_FLOAT:
-			return eval_multiword(t);
-		case P_RES:
-			return eval_res(t);
-		case P_ORG:
-			return eval_org(t);
-		case P_ASCII:
-		case P_ASCIIZ:
-			return eval_string(t);
-		case P_ENTRY:
-		case P_GLOBAL:
-			return 0;
-		case LABEL:
-			return eval_label(t);
-		case P_EQU:
-			return eval_equ(t);
-		case P_CONST:
-			return eval_const(t);
-		case NAME:
-			return eval_name(t);
-		case CURLOC:
-			return eval_curloc(t);
-		case OP_X:
-			if (cpu != CPU_MX16) {
-				aaerror(t, "Instruction valid only for MX-16");
-				return -1;
-			}
-		case OP_RN:
-		case OP_N:
-		case OP_R:
-		case OP__:
-			return eval_op_noarg(t);
-		case OP_RT:
-		case OP_T:
-		case OP_SHC:
-		case OP_BLC:
-		case OP_BRC:
-		case OP_EXL:
-		case OP_NRF:
-		case OP_HLT:
-			return eval_op_short(t);
+	if ((t->type >= N_MAX) || (t->type < 0)) {
+		return eval_err(t);
 	}
 
-	aaerror(t, "Unknown syntax element: %i", t->type);
-	return -1;
+	return eval_tab[t->type].fun(t);
 }
 
 // -----------------------------------------------------------------------
@@ -739,6 +681,7 @@ int assemble(struct st *prog, int pass)
 			ic = t->ic;
 		}
 		u = eval(t);
+		ic += t->size;
 		if (u < 0) {
 			return u;
 		}

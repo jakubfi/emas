@@ -22,7 +22,7 @@
 
 #include "st.h"
 #include "prog.h"
-#include "lexer_utils.h"
+#include "parser_utils.h"
 
 int yylex(void);
 
@@ -79,7 +79,7 @@ typedef struct YYLTYPE {
 %token <s> NAME "symbol"
 %token <s> LABEL "label"
 
-%token PROGRAM NORM NONE BLOB
+%token PROG NORM NONE BLOB
 
 %token P_CPU ".cpu"
 %token P_FILE ".file"
@@ -139,7 +139,7 @@ program:
 	;
 
 lines:
-	/* empty */ { $$ = st_int(PROGRAM, 0); }
+	/* empty */ { $$ = st_int(N_PROG, 0); }
 	| lines line { $$ = st_arg_app($1, $2); }
 	;
 
@@ -153,27 +153,27 @@ line:
 /* ---- LABEL ------------------------------------------------------------ */
 
 label:
-	LABEL { $$ = st_str(LABEL, $1); free($1); }
+	LABEL { $$ = st_str(N_LABEL, $1); free($1); }
 	;
 
 /* ---- OP --------------------------------------------------------------- */
 
 op:
-	OP_RN reg ',' norm	{ $$ = compose_norm(OP_RN, $1, $2<<6, $4); }
-	| OP_N norm			{ $$ = compose_norm(OP_R, $1, 0, $2); }
-	| OP_RT reg ',' expr{ $$ = st_int(OP_RT, $1|($2<<6)); st_arg_app($$, $4); }
-	| OP_T expr			{ $$ = st_int(OP_T, $1); st_arg_app($$, $2); }
-	| OP_SHC reg ','expr{ $$ = st_int(OP_SHC, $1|($2<<6)); st_arg_app($$, $4); }
-	| OP_R reg			{ $$ = st_int(OP_R, $1|($2<<6)); }
-	| OP__				{ $$ = st_int(OP__, $1); }
-	| OP_X				{ $$ = st_int(OP_X, $1); }
-	| OP_BLC expr		{ $$ = st_int(OP_BLC, $1); st_arg_app($$, $2); }
-	| OP_BRC expr		{ $$ = st_int(OP_BRC, $1); st_arg_app($$, $2); }
-	| OP_EXL expr		{ $$ = st_int(OP_EXL, $1); st_arg_app($$, $2); }
-	| OP_NRF			{ $$ = st_int(OP_NRF, $1); st_arg_app($$, st_int(INT, 255)); }
-	| OP_NRF expr		{ $$ = st_int(OP_NRF, $1); st_arg_app($$, $2); }
-	| OP_HLT			{ $$ = st_int(OP_HLT, $1); st_arg_app($$, st_int(INT, 0)); }
-	| OP_HLT expr		{ $$ = st_int(OP_HLT, $1); st_arg_app($$, $2); }
+	OP_RN reg ',' norm	{ $$ = compose_norm(N_OP_RN, $1, $2<<6, $4); }
+	| OP_N norm			{ $$ = compose_norm(N_OP_R, $1, 0, $2); }
+	| OP_RT reg ',' expr{ $$ = st_int(N_OP_RT, $1|($2<<6)); st_arg_app($$, $4); }
+	| OP_T expr			{ $$ = st_int(N_OP_T, $1); st_arg_app($$, $2); }
+	| OP_SHC reg ','expr{ $$ = st_int(N_OP_SHC, $1|($2<<6)); st_arg_app($$, $4); }
+	| OP_R reg			{ $$ = st_int(N_OP_R, $1|($2<<6)); }
+	| OP__				{ $$ = st_int(N_OP__, $1); }
+	| OP_X				{ $$ = st_int(N_OP_X, $1); }
+	| OP_BLC expr		{ $$ = st_int(N_OP_BLC, $1); st_arg_app($$, $2); }
+	| OP_BRC expr		{ $$ = st_int(N_OP_BRC, $1); st_arg_app($$, $2); }
+	| OP_EXL expr		{ $$ = st_int(N_OP_EXL, $1); st_arg_app($$, $2); }
+	| OP_NRF			{ $$ = st_int(N_OP_NRF, $1); st_arg_app($$, st_int(N_INT, 255)); }
+	| OP_NRF expr		{ $$ = st_int(N_OP_NRF, $1); st_arg_app($$, $2); }
+	| OP_HLT			{ $$ = st_int(N_OP_HLT, $1); st_arg_app($$, st_int(N_INT, 0)); }
+	| OP_HLT expr		{ $$ = st_int(N_OP_HLT, $1); st_arg_app($$, $2); }
 	;
 
 reg:
@@ -187,33 +187,32 @@ norm:
 	;
 
 normval:
-	reg { $$ = st_int(NORM, $1); }
-	| expr { $$ = st_int(NORM, 0); st_arg_app($$, $1); }
-	| reg '+' reg { $$ = st_int(NORM, $1|($3<<3)); }
-	| reg '+' expr { $$ = st_int(NORM, $1<<3); st_arg_app($$, $3); }
-	| expr '+' reg { $$ = st_int(NORM, $3<<3); st_arg_app($$, $1); }
-	| reg '-' expr { $$ = st_int(NORM, $1<<3); st_arg_app($$, st_arg(UMINUS, $3, NULL)); }
+	reg { $$ = st_int(N_NORM, $1); }
+	| expr { $$ = st_int(N_NORM, 0); st_arg_app($$, $1); }
+	| reg '+' reg { $$ = st_int(N_NORM, $1|($3<<3)); }
+	| reg '+' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, $3); }
+	| expr '+' reg { $$ = st_int(N_NORM, $3<<3); st_arg_app($$, $1); }
+	| reg '-' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, st_arg(N_UMINUS, $3, NULL)); }
 	;
 
 /* ---- PRAGMA ----------------------------------------------------------- */
 
 pragma:
 	P_CPU NAME { $$ = NULL; if (!prog_cpu($2)) YYABORT; }
-	| P_FILE string { $$ = NULL; loc_file($2); }
-	| P_EQU name expr { $$ = $2; $$->type = P_EQU; st_arg_app($$, $3); }
-	| P_CONST NAME expr { $$ = st_arg(P_CONST, $2, $3); }
-	| P_LBYTE exprs { $$ = compose_list(P_LBYTE, $2); }
-	| P_RBYTE exprs { $$ = compose_list(P_RBYTE, $2); }
-	| P_WORD exprs { $$ = compose_list(P_WORD, $2); }
-	| P_DWORD exprs { $$ = compose_list(P_DWORD, $2); }
-	| P_FLOAT floats { $$ = compose_list(P_FLOAT, $2); }
-	| P_ASCII string { $$ = st_str(P_ASCII, $2); }
-	| P_ASCIIZ string { $$ = st_str(P_ASCIIZ, $2); }
-	| P_RES expr { $$ = st_arg(P_RES, $2, NULL); }
-	| P_RES expr ',' expr { $$ = st_arg(P_RES, $2, $4, NULL); }
-	| P_ORG expr { $$ = st_arg(P_ORG, $2, NULL); }
-	| P_ENTRY NAME { $$ = st_arg(P_ENTRY, $2, NULL); }
-	| P_GLOBAL NAME { $$ = st_arg(P_GLOBAL, $2, NULL); }
+	| P_EQU name expr { $$ = $2; $$->type = N_EQU; st_arg_app($$, $3); }
+	| P_CONST NAME expr { $$ = st_arg(N_CONST, $2, $3); }
+	| P_LBYTE exprs { $$ = compose_list(N_LBYTE, $2); }
+	| P_RBYTE exprs { $$ = compose_list(N_RBYTE, $2); }
+	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
+	| P_DWORD exprs { $$ = compose_list(N_DWORD, $2); }
+	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
+	| P_ASCII string { $$ = st_str(N_ASCII, $2); }
+	| P_ASCIIZ string { $$ = st_str(N_ASCIIZ, $2); }
+	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
+	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
+	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
+	| P_ENTRY NAME { $$ = st_arg(N_ENTRY, $2, NULL); }
+	| P_GLOBAL NAME { $$ = st_arg(N_GLOBAL, $2, NULL); }
 	| INVALID_PRAGMA { $$ = NULL; YYABORT; }
 	;
 
@@ -222,25 +221,25 @@ pragma:
 expr:
 	int
 	| name
-	| CURLOC { $$ = st_int(CURLOC, 0); }
+	| CURLOC { $$ = st_int(N_CURLOC, 0); }
 	| '(' expr ')' { $$ = $2; }
-	| expr '+' expr { $$ = st_arg('+', $1, $3, NULL); }
-	| expr '-' expr { $$ = st_arg('-', $1, $3, NULL); }
-	| expr '*' expr { $$ = st_arg('*', $1, $3, NULL); }
-	| expr '/' expr { $$ = st_arg('/', $1, $3, NULL); }
-	| expr '%' expr { $$ = st_arg('%', $1, $3, NULL); }
-	| '-' expr %prec UMINUS { $$ = st_arg(UMINUS, $2, NULL); }
-	| expr '\\' expr { $$ = st_arg('\\', $1, $3, NULL); }
-	| expr LSHIFT expr { $$ = st_arg(LSHIFT, $1, $3, NULL); }
-	| expr RSHIFT expr { $$ = st_arg(RSHIFT, $1, $3, NULL); }
-	| expr '&' expr { $$ = st_arg('&', $1, $3, NULL); }
-	| expr '|' expr { $$ = st_arg('|', $1, $3, NULL); }
-	| expr '^' expr { $$ = st_arg('^', $1, $3, NULL); }
-	| '~' expr { $$ = st_arg('~', $2, NULL); }
+	| expr '+' expr { $$ = st_arg(N_PLUS, $1, $3, NULL); }
+	| expr '-' expr { $$ = st_arg(N_MINUS, $1, $3, NULL); }
+	| expr '*' expr { $$ = st_arg(N_MUL, $1, $3, NULL); }
+	| expr '/' expr { $$ = st_arg(N_DIV, $1, $3, NULL); }
+	| expr '%' expr { $$ = st_arg(N_REM, $1, $3, NULL); }
+	| '-' expr %prec UMINUS { $$ = st_arg(N_UMINUS, $2, NULL); }
+	| expr '\\' expr { $$ = st_arg(N_SCALE, $1, $3, NULL); }
+	| expr LSHIFT expr { $$ = st_arg(N_LSHIFT, $1, $3, NULL); }
+	| expr RSHIFT expr { $$ = st_arg(N_RSHIFT, $1, $3, NULL); }
+	| expr '&' expr { $$ = st_arg(N_AND, $1, $3, NULL); }
+	| expr '|' expr { $$ = st_arg(N_OR, $1, $3, NULL); }
+	| expr '^' expr { $$ = st_arg(N_XOR, $1, $3, NULL); }
+	| '~' expr { $$ = st_arg(N_NEG, $2, NULL); }
 	;
 
 name:
-	NAME { $$ = st_str(NAME, $1); free($1); }
+	NAME { $$ = st_str(N_NAME, $1); free($1); }
 	;
 
 exprs:
@@ -251,7 +250,7 @@ exprs:
 /* ---- STORAGE ---------------------------------------------------------- */
 
 int:
-	INT { $$ = st_int(INT, $1); }
+	INT { $$ = st_int(N_INT, $1); }
 	| INVALID_INT { $$ = NULL; YYABORT; }
 	| INVALID_FLAGS { $$ = NULL; YYABORT; }
 	;
@@ -262,10 +261,10 @@ string:
 	;
 
 float:
-	FLOAT { $$ = st_float(FLOAT, $1); }
-	| '-' FLOAT { $$ = st_float(FLOAT, -$2); }
-	| INT { $$ = st_float(FLOAT, $1); }
-	| '-'INT { $$ = st_float(FLOAT, -$2); }
+	FLOAT { $$ = st_float(N_FLO, $1); }
+	| '-' FLOAT { $$ = st_float(N_FLO, -$2); }
+	| INT { $$ = st_float(N_FLO, $1); }
+	| '-'INT { $$ = st_float(N_FLO, -$2); }
 	| INVALID_TOKEN { $$ = NULL; YYABORT; }
 	;
 

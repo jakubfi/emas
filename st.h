@@ -21,24 +21,25 @@
 #include <inttypes.h>
 
 struct st {
-	int type;
-
-	char *str;
-	int val;
-	double flo;
-	uint16_t *data;
-
-	int loc_line;
-	int loc_col;
-	char *loc_file;
-
-	int ic;
-	int relative;
-
-	struct st *args;
-	struct st *next;
-	struct st *prev;
-	struct st *last;
+	int type;			// Node type (not token type!)
+						// Node may hold:
+	char *str;			//  * string
+	int val;			//  * integer value
+	double flo;			//  * floating point value
+	uint16_t *data;		//  * unsigned 16-bit blob (rendered only during evaluation)
+						//  * list of arguments:
+	struct st *args;	//     * list head
+	struct st *next;	//     * next argument
+	struct st *prev;	//     * previous argument
+	struct st *last;	//     * list tail
+						// Also, we store location of a node related token in source file (to reference errors)
+	char *loc_file;		//  * source file (pointer to a file dictionary)
+	int loc_line;		//  * source line
+	int loc_col;		//  * source column
+						// Upon evaluation, nodes get additional properties:
+	int ic;				//  * IC at which node is to be rendered
+	int size;			//  * size of data that node actually holds
+	int relative;		//  * set if node holds object-relative value
 };
 
 struct st * st_copy(struct st *t);
