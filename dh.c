@@ -164,7 +164,7 @@ void dh_destroy(struct dh_table *dh)
 		while (elem) {
 			tmp = elem->next;
 			free(elem->name);
-			st_drop(elem->t);
+			if (elem->t) st_drop(elem->t);
 			free(elem);
 			elem = tmp;
 		}

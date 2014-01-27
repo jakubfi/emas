@@ -118,9 +118,8 @@ typedef struct YYLTYPE {
 %left '+' '-'
 %left '*' '/' '%'
 %left '\\'
-%token '~'
+%right '~'
 %nonassoc UMINUS "unary minus"
-%nonassoc NEG "~"
 
 %type <v> reg
 %type <t> line lines label op pragma
@@ -160,8 +159,8 @@ label:
 /* ---- OP --------------------------------------------------------------- */
 
 op:
-	OP_RN reg ',' norm	{ $$ = st_int(OP_RN, $1|($2<<6)); st_arg_app($$, $4); }
-	| OP_N norm			{ $$ = st_int(OP_N, $1); st_arg_app($$, $2); }
+	OP_RN reg ',' norm	{ $$ = compose_norm(OP_RN, $1, $2<<6, $4); }
+	| OP_N norm			{ $$ = compose_norm(OP_R, $1, 0, $2); }
 	| OP_RT reg ',' expr{ $$ = st_int(OP_RT, $1|($2<<6)); st_arg_app($$, $4); }
 	| OP_T expr			{ $$ = st_int(OP_T, $1); st_arg_app($$, $2); }
 	| OP_SHC reg ','expr{ $$ = st_int(OP_SHC, $1|($2<<6)); st_arg_app($$, $4); }
@@ -237,7 +236,7 @@ expr:
 	| expr '&' expr { $$ = st_arg('&', $1, $3, NULL); }
 	| expr '|' expr { $$ = st_arg('|', $1, $3, NULL); }
 	| expr '^' expr { $$ = st_arg('^', $1, $3, NULL); }
-	| '~' expr %prec NEG { $$ = st_arg('~', $2, NULL); }
+	| '~' expr { $$ = st_arg('~', $2, NULL); }
 	;
 
 name:

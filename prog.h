@@ -41,6 +41,7 @@ enum sym_types {
 };
 
 int prog_cpu(char *cpu_name);
+struct st * compose_norm(int type, int opcode, int reg, struct st *norm);
 int assemble(struct st *prog, int pass);
 
 int eval(struct st *t);

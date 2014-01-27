@@ -2,16 +2,20 @@ BUGS:
 
 TODO:
 
+* rework lines/cols for better error handling
+* .global
+* .entry
 * integer underflow/overflow handling (or not)
+
 * emelf:
   * structure
   * library (?)
   * writer
   * dumper
   * linker
-* rework lines/cols for better error handling
-* emelf/raw output
-* debug information in emelf
+  * assembler output
+  * debug information in emelf
+
 * preprocessor
   * .macro
   * .alias
@@ -21,4 +25,3 @@ TODO:
 TO CLARIFY:
 
 * overlays? (.ovl .len .max)
-* segments? (.text, .bss, .data)

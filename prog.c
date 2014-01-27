@@ -63,6 +63,19 @@ int prog_cpu(char *cpu_name)
 }
 
 // -----------------------------------------------------------------------
+struct st * compose_norm(int type, int opcode, int reg, struct st *norm)
+{
+	struct st *op = st_int(type, opcode | reg | norm->val);
+	struct st *data = NULL;
+	if (norm->args) {
+		data = st_arg(P_WORD, norm->args, NULL);
+		norm->args = NULL;
+	}
+	st_drop(norm);
+	return st_app(op, data);
+}
+
+// -----------------------------------------------------------------------
 void aaerror(struct st *t, char *format, ...)
 {
 	assert(t && format);
@@ -317,7 +330,6 @@ int eval_res(struct st *t)
 	// first, we need element count
 	u = eval(t->args);
 	if (u) {
-		aaerror(t, "Element count for .res is undefined");
 		return -1;
 	}
 
@@ -349,7 +361,6 @@ int eval_org(struct st *t)
 {
 	int u = eval(t->args);
 	if (u) {
-		aaerror(t, "Value for .org is undefined");
 		return -1;
 	}
 
@@ -506,41 +517,6 @@ int eval_curloc(struct st *t)
 }
 
 // -----------------------------------------------------------------------
-int eval_op_norm(struct st *t)
-{
-	int u;
-	int count = 0;
-	struct st *norm = t->args;
-
-	if (!t->data) {
-		t->data = malloc(2 * sizeof(uint16_t));
-	}
-
-	// fill in register part of norm arg
-	t->data[0] = t->val | norm->val;
-	count++;
-	ic++;
-
-	// if there is 'expr' part of norm arg, evaluate it
-	if (norm->args) {
-		count++;
-		ic++;
-		u = eval(norm->args);
-		if (u) {
-			return u;
-		}
-		t->data[1] = norm->args->val;
-	}
-
-	t->type = BLOB;
-	t->val = count;
-	st_drop(t->args);
-	t->args = t->last = NULL;
-
-	return 0;
-}
-
-// -----------------------------------------------------------------------
 int eval_as_short(struct st *t, int type, int op)
 {
 	int min, max;
@@ -683,6 +659,9 @@ int eval(struct st *t)
 		case P_ASCII:
 		case P_ASCIIZ:
 			return eval_string(t);
+		case P_ENTRY:
+		case P_GLOBAL:
+			return 0;
 		case LABEL:
 			return eval_label(t);
 		case P_EQU:
@@ -693,14 +672,13 @@ int eval(struct st *t)
 			return eval_name(t);
 		case CURLOC:
 			return eval_curloc(t);
-		case OP_RN:
-		case OP_N:
-			return eval_op_norm(t);
 		case OP_X:
 			if (cpu != CPU_MX16) {
 				aaerror(t, "Instruction valid only for MX-16");
 				return -1;
 			}
+		case OP_RN:
+		case OP_N:
 		case OP_R:
 		case OP__:
 			return eval_op_noarg(t);
