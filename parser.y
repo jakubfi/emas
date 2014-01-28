@@ -17,7 +17,6 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 
 #include "st.h"
@@ -65,17 +64,18 @@ typedef struct YYLTYPE {
 	struct st *t;
 };
 
-%token END 0 "end of file"
+%token END 0 "EOF"
 %token INVALID_TOKEN "invalid token"
 %token INVALID_FLAGS "invalid flags"
 %token INVALID_STRING "invalid string"
 %token INVALID_PRAGMA "invalid directive"
 %token INVALID_INT "invalid integer"
 %token INVALID_FLOAT "invalid float"
+%token INVALID_REGISTER "invalid register"
 %token <s> STRING "string"
 %token <v> INT "integer"
-%token <f> FLOAT "floating point number"
-%token <v> REG "register name"
+%token <f> FLOAT "float"
+%token <v> REG "register"
 %token <s> NAME "symbol"
 %token <s> LABEL "label"
 
@@ -87,19 +87,26 @@ typedef struct YYLTYPE {
 %token P_INCLUDE ".include"
 %token P_EQU ".equ"
 %token P_CONST ".const"
-%token P_LBYTE P_RBYTE P_WORD P_DWORD P_FLOAT P_ASCII P_ASCIIZ P_RES
+%token P_LBYTE ".lbyte"
+%token P_RBYTE ".rbyte"
+%token P_WORD ".word"
+%token P_DWORD ".dword"
+%token P_FLOAT ".float"
+%token P_ASCII ".ascii"
+%token P_ASCIIZ ".asciiz"
+%token P_RES ".res"
 %token P_ORG ".org"
 %token P_ENTRY ".entry"
 %token P_GLOBAL ".global"
 
-%token <v> OP_RN "(reg, norm) argument op"
-%token <v> OP_N "(norm) argument op"
-%token <v> OP_RT "(reg, T) argument op"
-%token <v> OP_T "(T) argument op"
+%token <v> OP_RN "reg-norm-arg op"
+%token <v> OP_N "norm-arg op"
+%token <v> OP_RT "reg-T-arg op"
+%token <v> OP_T "T-arg op"
 %token <v> OP_SHC "SHC"
-%token <v> OP_R "(reg) argument op"
-%token <v> OP__ "argumentless op"
-%token <v> OP_X "argumentless extra op"
+%token <v> OP_R "reg-arg op"
+%token <v> OP__ "no-arg op"
+%token <v> OP_X "MX-16 op"
 %token <v> OP_BLC "BLC"
 %token <v> OP_BRC "BRC"
 %token <v> OP_EXL "EXL"
@@ -125,7 +132,6 @@ typedef struct YYLTYPE {
 %type <t> line lines label op pragma
 %type <t> norm normval expr exprs name
 %type <t> int float floats
-%type <s> string
 
 %destructor { st_drop($$); } <t>
 %destructor { free($$); } <s>
@@ -147,7 +153,6 @@ line:
 	label
 	| op
 	| pragma
-	| INVALID_TOKEN { $$ = NULL; YYABORT; }
 	;
 
 /* ---- LABEL ------------------------------------------------------------ */
@@ -178,7 +183,6 @@ op:
 
 reg:
 	REG
-	| INVALID_TOKEN { YYABORT; }
 	;
 
 norm:
@@ -200,20 +204,19 @@ normval:
 pragma:
 	P_CPU NAME { $$ = NULL; if (!prog_cpu($2)) YYABORT; }
 	| P_EQU name expr { $$ = $2; $$->type = N_EQU; st_arg_app($$, $3); }
-	| P_CONST NAME expr { $$ = st_arg(N_CONST, $2, $3); }
+	| P_CONST name expr { $$ = st_arg(N_CONST, $2, $3); }
 	| P_LBYTE exprs { $$ = compose_list(N_LBYTE, $2); }
 	| P_RBYTE exprs { $$ = compose_list(N_RBYTE, $2); }
 	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
 	| P_DWORD exprs { $$ = compose_list(N_DWORD, $2); }
 	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
-	| P_ASCII string { $$ = st_str(N_ASCII, $2); }
-	| P_ASCIIZ string { $$ = st_str(N_ASCIIZ, $2); }
+	| P_ASCII STRING { $$ = st_str(N_ASCII, $2); }
+	| P_ASCIIZ STRING { $$ = st_str(N_ASCIIZ, $2); }
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
-	| P_ENTRY NAME { $$ = st_arg(N_ENTRY, $2, NULL); }
-	| P_GLOBAL NAME { $$ = st_arg(N_GLOBAL, $2, NULL); }
-	| INVALID_PRAGMA { $$ = NULL; YYABORT; }
+	| P_ENTRY name { $$ = st_arg(N_ENTRY, $2, NULL); }
+	| P_GLOBAL name { $$ = st_arg(N_GLOBAL, $2, NULL); }
 	;
 
 /* ---- EXPR ------------------------------------------------------------- */
@@ -251,13 +254,6 @@ exprs:
 
 int:
 	INT { $$ = st_int(N_INT, $1); }
-	| INVALID_INT { $$ = NULL; YYABORT; }
-	| INVALID_FLAGS { $$ = NULL; YYABORT; }
-	;
-
-string:
-	STRING
-	| INVALID_TOKEN { $$ = NULL; YYABORT; }
 	;
 
 float:
@@ -265,7 +261,6 @@ float:
 	| '-' FLOAT { $$ = st_float(N_FLO, -$2); }
 	| INT { $$ = st_float(N_FLO, $1); }
 	| '-'INT { $$ = st_float(N_FLO, -$2); }
-	| INVALID_TOKEN { $$ = NULL; YYABORT; }
 	;
 
 floats:
@@ -274,16 +269,5 @@ floats:
 	;
 %%
 
-
-// -----------------------------------------------------------------------
-void yyerror(char *s, ...)
-{
-	va_list ap;
-	va_start(ap, s);
-	printf("%s:%d:%d: ", yylloc.filename, yylloc.first_line, yylloc.first_column);
-	vprintf(s, ap);
-	printf("\n");
-	va_end(ap);
-}
 
 // vim: tabstop=4 autoindent

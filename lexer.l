@@ -49,9 +49,9 @@ oct		0[0-7]+
 hex		0x[0-9a-fA-F]+
 dec		[0-9]+
 float	[0-9]+(\.[0-9]+)?([eE]-?[0-9]+)?
-flags	\?[ZMVCLEGYX1234567]{1,16}
+flags	\?[a-zA-Z0-9]+
 
-reg		(?i:r)[0-7]
+reg		(?i:r)[0-9]+
 pragma	\.[a-zA-Z]+
 name	[a-zA-Z][a-zA-Z0-9_]*
 
@@ -109,7 +109,6 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 }
 
 <str>[^"][ \t]*$ {
-	//llerror("Invalid character in string: #%d", *yytext);
 	llerror("Unterminated string");
 	BEGIN(INITIAL);
 	return INVALID_STRING;
@@ -181,7 +180,11 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 
 {reg} {
 	yylval.v = strtol(yytext+1, NULL, 10);
-	return REG;
+	if ((yylval.v < 0) || (yylval.v > 7)) {
+		return INVALID_REGISTER;
+	} else {
+		return REG;
+	}
 }
 
  /* ---- PRAGMAS --------------------------------------------------------- */

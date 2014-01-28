@@ -16,11 +16,27 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <strings.h>
+#include <stdarg.h>
 
 #include "prog.h"
 #include "parser.h"
+
+extern int lexer_err_reported;
+
+// -----------------------------------------------------------------------
+void yyerror(char *s, ...)
+{
+	if (lexer_err_reported) return;
+	va_list ap;
+	va_start(ap, s);
+	printf("%s:%d:%d: ", yylloc.filename, yylloc.first_line, yylloc.first_column);
+	vprintf(s, ap);
+	printf("\n");
+	va_end(ap);
+}
 
 // -----------------------------------------------------------------------
 int prog_cpu(char *cpu_name)
