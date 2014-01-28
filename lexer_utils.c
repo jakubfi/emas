@@ -84,16 +84,7 @@ int flag2mask(char c)
 // -----------------------------------------------------------------------
 int lex_int(char *str, int offset, int base, int *val)
 {
-	long v = strtol(str+offset, NULL, base);
-	if (v < INT_MIN) {
-		llerror("Integer underflow: %s", str);
-		return INVALID_INT;
-	}
-	if (v > INT_MAX) {
-		llerror("Integer overflow: %s", str);
-		return INVALID_INT;
-	}
-	*val = v;
+	*val = strtol(str+offset, NULL, base);
 	return INT;
 }
 

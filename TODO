@@ -4,7 +4,6 @@ TODO:
 
 * .global
 * .entry
-* integer underflow/overflow handling (or not)
 
 * emelf:
   * structure

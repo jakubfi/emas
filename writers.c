@@ -66,13 +66,13 @@ int writer_debug(struct st *prog, char *ifile, char *ofile)
 		switch (t->type) {
 			case N_INT:
 				bin = int2binf("... ... . ... ... ...", t->val, 16);
-				printf("@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic, t->val, bin, t->val);
+				printf("@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic, (uint16_t) t->val, bin, t->val);
 				free(bin);
 				break;
 			case N_BLOB:
 				for (int i=0 ; i<t->size ; i++) {
 					char *bin = int2binf("... ... . ... ... ...", t->data[i], 16);
-					printf("@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic+i, t->data[i], bin, t->data[i]);
+					printf("@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic+i, (uint16_t) t->data[i], bin, t->data[i]);
 					free(bin);
 				}
 				break;
