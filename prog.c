@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <strings.h>
 #include <math.h>
 #include <inttypes.h>
 
@@ -103,6 +104,23 @@ void aaerror(struct st *t, char *format, ...)
 		vsnprintf(aerr+len, MAX_ERRLEN-len, format, ap);
 		va_end(ap);
 	}
+}
+// -----------------------------------------------------------------------
+int prog_cpu(char *cpu_name)
+{
+	assert(cpu_name);
+
+	int ret = 1;
+	if (!strcasecmp(cpu_name, "mera400")) {
+		cpu = CPU_MERA400;
+	} else if (!strcasecmp(cpu_name, "mx16")) {
+		cpu = CPU_MX16;
+		ic_max = 65535;
+	} else {
+		ret = 0;
+	}
+
+	return ret;
 }
 
 // -----------------------------------------------------------------------

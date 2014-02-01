@@ -39,30 +39,6 @@ void yyerror(char *s, ...)
 }
 
 // -----------------------------------------------------------------------
-int prog_cpu(char *cpu_name)
-{
-	assert(cpu_name);
-
-	int ret = 1;
-	if (cpu != CPU_DEFAULT) {
-		yyerror("CPU type already set");
-		ret = 0;
-	} else {
-		if (!strcasecmp(cpu_name, "mera400")) {
-			cpu = CPU_MERA400;
-		} else if (!strcasecmp(cpu_name, "mx16")) {
-			cpu = CPU_MX16;
-			ic_max = 65535;
-		} else {
-			yyerror("Unknown CPU type '%s'", cpu_name);
-			ret = 0;
-		}
-	}
-
-	return ret;
-}
-
-// -----------------------------------------------------------------------
 struct st * compose_norm(int type, int opcode, int reg, struct st *norm)
 {
 	struct st *op = st_int(type, opcode | reg | norm->val);

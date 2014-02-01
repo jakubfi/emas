@@ -35,8 +35,8 @@ extern int ic_max;
 
 enum cpu_types {
 	CPU_DEFAULT = 0,
-	CPU_MERA400 = 1,
-	CPU_MX16 = 2,
+	CPU_MERA400,
+	CPU_MX16,
 };
 
 enum sym_types {
@@ -102,6 +102,8 @@ struct eval_t {
 	char *name;
 	eval_fun fun;
 };
+
+int prog_cpu(char *cpu_name);
 
 int eval_1arg(struct st *t);
 int eval_2arg(struct st *t);

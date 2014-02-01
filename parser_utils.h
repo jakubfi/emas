@@ -19,7 +19,6 @@
 #define PARSER_UTILS_H
 
 void yyerror(char *s, ...);
-int prog_cpu(char *cpu_name);
 struct st * compose_norm(int type, int opcode, int reg, struct st *norm);
 struct st * compose_list(int type, struct st *list);
 

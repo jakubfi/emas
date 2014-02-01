@@ -45,17 +45,24 @@ void usage()
 {
 	printf("Usage: emas [options] [input [output]]\n");
 	printf("Where options are one or more of:\n");
-	printf("   -v        : print version and exit\n");
-	printf("   -h        : print help and exit\n");
-	printf("   -O <type> : set output type: raw, debug, emelf (defaults to raw)\n");
+	printf("   -v         : print version and exit\n");
+	printf("   -h         : print help and exit\n");
+	printf("   -c <cpu>   : set CPU type: mera400, mx16\n");
+	printf("   -O <otype> : set output type: raw, debug, emelf (defaults to raw)\n");
 }
 
 // -----------------------------------------------------------------------
 int parse_args(int argc, char **argv)
 {
 	int option;
-	while ((option = getopt(argc, argv,"O:vh")) != -1) {
+	while ((option = getopt(argc, argv,"c:O:vh")) != -1) {
 		switch (option) {
+			case 'c':
+				if (!prog_cpu(optarg)) {
+					printf("Unknown cpu: '%s'.\n", optarg);
+					return -1;
+				}
+				break;
 			case 'O':
 				if (!strcmp(optarg, "raw")) {
 					otype = O_RAW;
