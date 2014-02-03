@@ -106,21 +106,32 @@ void aaerror(struct st *t, char *format, ...)
 	}
 }
 // -----------------------------------------------------------------------
-int prog_cpu(char *cpu_name)
+int prog_cpu(char *cpu_name, int force)
 {
 	assert(cpu_name);
 
-	int ret = 1;
-	if (!strcasecmp(cpu_name, "mera400")) {
-		cpu = CPU_MERA400;
-	} else if (!strcasecmp(cpu_name, "mx16")) {
-		cpu = CPU_MX16;
-		ic_max = 65535;
-	} else {
-		ret = 0;
+	// if cpu type was set in commandline, silently ignore .cpu directive
+	if (cpu & CPU_FORCED) {
+		return 0;
 	}
 
-	return ret;
+	// if cpu type was already set using .cpu directive, fail
+	if (cpu != CPU_DEFAULT) {
+		return -1;
+	}
+
+	// first time setting cpu type
+	if (!strcasecmp(cpu_name, "mera400")) {
+		cpu = CPU_MERA400 | force;
+		ic_max = 32767;
+	} else if (!strcasecmp(cpu_name, "mx16")) {
+		cpu = CPU_MX16 | force;
+		ic_max = 65535;
+	} else { // unknown CPU type
+		return 1;
+	}
+
+	return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -640,7 +651,7 @@ int eval_op_short(struct st *t)
 // -----------------------------------------------------------------------
 int eval_op_mx16(struct st *t)
 {
-	if (cpu != CPU_MX16) {
+	if (!(cpu & CPU_MX16)) {
 		aaerror(t, "Instruction valid only for MX-16");
 		return -1;
 	} else {

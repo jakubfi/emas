@@ -34,9 +34,10 @@ extern char aerr[MAX_ERRLEN+1];
 extern int ic_max;
 
 enum cpu_types {
-	CPU_DEFAULT = 0,
-	CPU_MERA400,
-	CPU_MX16,
+	CPU_DEFAULT			= 0,
+	CPU_FORCED			= 1 << 0,
+	CPU_MERA400			= 1 << 1,
+	CPU_MX16			= 1 << 2,
 };
 
 enum sym_types {
@@ -103,7 +104,7 @@ struct eval_t {
 	eval_fun fun;
 };
 
-int prog_cpu(char *cpu_name);
+int prog_cpu(char *cpu_name, int force);
 
 int eval_1arg(struct st *t);
 int eval_2arg(struct st *t);

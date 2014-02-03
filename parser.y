@@ -202,7 +202,17 @@ normval:
 /* ---- PRAGMA ----------------------------------------------------------- */
 
 pragma:
-	P_CPU NAME { $$ = NULL; if (!prog_cpu($2)) { yyerror("Unknown CPU type '%s'", $2); YYABORT;} }
+	P_CPU NAME {
+		$$ = NULL;
+		int res = prog_cpu($2, 0);
+		if (res > 0) {
+			yyerror("Unknown CPU type '%s'.", $2);
+			YYABORT;
+		} else if (res < 0) {
+			yyerror("CPU type already set.");
+			YYABORT;
+		}
+	}
 	| P_EQU name expr { $$ = $2; $$->type = N_EQU; st_arg_app($$, $3); }
 	| P_CONST name expr { $$ = st_arg(N_CONST, $2, $3); }
 	| P_LBYTE exprs { $$ = compose_list(N_LBYTE, $2); }

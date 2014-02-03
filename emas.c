@@ -58,7 +58,7 @@ int parse_args(int argc, char **argv)
 	while ((option = getopt(argc, argv,"c:O:vh")) != -1) {
 		switch (option) {
 			case 'c':
-				if (!prog_cpu(optarg)) {
+				if (prog_cpu(optarg, CPU_FORCED)) {
 					printf("Unknown cpu: '%s'.\n", optarg);
 					return -1;
 				}
