@@ -564,6 +564,8 @@ int eval_global(struct st *t)
 		dh_addv(sym, t->str, SYM_UNDEFINED | type, 0);
 	}
 
+	t->type = N_NONE;
+
 	return 0;
 }
 
