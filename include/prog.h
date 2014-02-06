@@ -44,7 +44,8 @@ enum sym_types {
 	SYM_UNDEFINED	= 0b00000001,
 	SYM_RELATIVE	= 0b00000010,
 	SYM_CONST		= 0b00000100,
-	SYM_LOCAL		= 0b00001000,
+	SYM_GLOBAL		= 0b00001000,
+	SYM_ENTRY		= 0b00010000,
 };
 
 enum node_types {
@@ -117,6 +118,7 @@ int eval_string(struct st *t);
 int eval_label(struct st *t);
 int eval_equ(struct st *t);
 int eval_const(struct st *t);
+int eval_global(struct st *t);
 int eval_name(struct st *t);
 int eval_curloc(struct st *t);
 int eval_as_short(struct st *t, int type, int op);

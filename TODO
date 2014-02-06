@@ -2,9 +2,6 @@ BUGS:
 
 TODO:
 
-* .global
-* .entry
-
 * emelf:
   * structure
   * library (?)
@@ -22,4 +19,5 @@ TODO:
 
 TO CLARIFY:
 
+* .global, .entry - only relative?
 * overlays? (.ovl .len .max)

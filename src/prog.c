@@ -65,8 +65,8 @@ static struct eval_t eval_tab[] = {
 	{ ".org",	eval_org },
 	{ ".ascii",	eval_string },
 	{ ".asciiz",eval_string },
-	{ ".entry",	eval_none },
-	{ ".global",eval_none },
+	{ ".entry",	eval_global },
+	{ ".global",eval_global },
 	{ "LABEL",	eval_label },
 	{ ".equ",	eval_equ },
 	{ ".const",	eval_const },
@@ -452,12 +452,20 @@ int eval_string(struct st *t)
 // -----------------------------------------------------------------------
 int eval_label(struct st *t)
 {
-	if (dh_get(sym, t->str)) {
+	struct dh_elem *s;
+
+	s = dh_get(sym, t->str);
+
+	if (!s) {
+		dh_addv(sym, t->str, SYM_RELATIVE | SYM_CONST, ic);
+	} else if (s->type & SYM_UNDEFINED) {
+		s->type &= ~SYM_UNDEFINED;
+		s->type |= SYM_RELATIVE | SYM_CONST;
+		s->value = ic;
+	} else {
 		aaerror(t, "Symbol '%s' already defined", t->str);
 		return -1;
 	}
-
-	dh_addv(sym, t->str, SYM_RELATIVE | SYM_CONST | SYM_LOCAL, ic);
 
 	t->type = N_NONE;
 
@@ -468,12 +476,18 @@ int eval_label(struct st *t)
 int eval_equ(struct st *t)
 {
 	int u;
-	struct dh_elem *s = dh_get(sym, t->str);
+	struct dh_elem *s;
+	int type = 0;
+
+	s = dh_get(sym, t->str);
 
 	if (s) {
 		if (s->type & SYM_CONST) { // defined, but constant
 			aaerror(t, "Symbol '%s' cannot be redefined", t->str);
 			return -1;
+		} else if (s->type & SYM_UNDEFINED) {
+			type = s->type & ~SYM_UNDEFINED;
+			dh_delete(sym, t->str);
 		} else { // defined, variable - just redefine
 			dh_delete(sym, t->str);
 		}
@@ -484,7 +498,7 @@ int eval_equ(struct st *t)
 		return u;
 	}
 
-	dh_addt(sym, t->str, SYM_LOCAL, t->args);
+	dh_addt(sym, t->str, type, t->args);
 
 	t->type = N_NONE;
 	t->args = NULL;
@@ -496,10 +510,19 @@ int eval_equ(struct st *t)
 int eval_const(struct st *t)
 {
 	int u;
+	struct dh_elem *s;
+	int type = 0;
 
-	if (dh_get(sym, t->str)) {
-		aaerror(t, "Symbol '%s' already defined", t->str);
-		return -1;
+	s = dh_get(sym, t->str);
+
+	if (s) {
+		if (s->type & SYM_UNDEFINED) {
+			type = s->type & ~SYM_UNDEFINED;
+			dh_delete(sym, t->str);
+		} else {
+			aaerror(t, "Symbol '%s' already defined", t->str);
+			return -1;
+		}
 	}
 
 	u = eval(t->args);
@@ -507,10 +530,39 @@ int eval_const(struct st *t)
 		return u;
 	}
 
-	dh_addt(sym, t->str, SYM_LOCAL | SYM_CONST, t->args);
+	dh_addt(sym, t->str, SYM_CONST | type, t->args);
 
 	t->type = N_NONE;
 	t->args = NULL;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_global(struct st *t)
+{
+	int type = 0;
+	struct dh_elem *s;
+
+	switch (t->type) {
+		case N_GLOBAL:
+			type = SYM_GLOBAL;
+			break;
+		case N_ENTRY:
+			type = SYM_ENTRY;
+			break;
+		default:
+			assert(!"unknown node type for .global/.entry");
+			return -1;
+	}
+
+	s = dh_get(sym, t->str);
+
+	if (s) {
+		s->type |= type;
+	} else {
+		dh_addv(sym, t->str, SYM_UNDEFINED | type, 0);
+	}
 
 	return 0;
 }
@@ -521,7 +573,7 @@ int eval_name(struct st *t)
 	int u;
 	struct dh_elem *s = dh_get(sym, t->str);
 
-	if (!s) {
+	if (!s || (s->type & SYM_UNDEFINED)) {
 		aaerror(t, "Symbol '%s' not defined", t->str);
 		return 1;
 	}
