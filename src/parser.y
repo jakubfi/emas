@@ -128,10 +128,9 @@ typedef struct YYLTYPE {
 %right '~'
 %nonassoc UMINUS "unary minus"
 
-%type <v> reg
-%type <t> line lines label op pragma
-%type <t> norm normval expr exprs name
-%type <t> int float floats
+%type <t> line lines op pragma
+%type <t> norm normval expr exprs
+%type <t> float floats
 
 %destructor { st_drop($$); } <t>
 %destructor { free($$); } <s>
@@ -150,26 +149,20 @@ lines:
 	;
 
 line:
-	label
+	LABEL { $$ = st_str(N_LABEL, $1); free($1); }
 	| op
 	| pragma
-	;
-
-/* ---- LABEL ------------------------------------------------------------ */
-
-label:
-	LABEL { $$ = st_str(N_LABEL, $1); free($1); }
 	;
 
 /* ---- OP --------------------------------------------------------------- */
 
 op:
-	OP_RN reg ',' norm	{ $$ = compose_norm(N_OP_RN, $1, $2<<6, $4); }
+	OP_RN REG ',' norm	{ $$ = compose_norm(N_OP_RN, $1, $2<<6, $4); }
 	| OP_N norm			{ $$ = compose_norm(N_OP_R, $1, 0, $2); }
-	| OP_RT reg ',' expr{ $$ = st_int(N_OP_RT, $1|($2<<6)); st_arg_app($$, $4); }
+	| OP_RT REG ',' expr{ $$ = st_int(N_OP_RT, $1|($2<<6)); st_arg_app($$, $4); }
 	| OP_T expr			{ $$ = st_int(N_OP_T, $1); st_arg_app($$, $2); }
-	| OP_SHC reg ','expr{ $$ = st_int(N_OP_SHC, $1|($2<<6)); st_arg_app($$, $4); }
-	| OP_R reg			{ $$ = st_int(N_OP_R, $1|($2<<6)); }
+	| OP_SHC REG ','expr{ $$ = st_int(N_OP_SHC, $1|($2<<6)); st_arg_app($$, $4); }
+	| OP_R REG			{ $$ = st_int(N_OP_R, $1|($2<<6)); }
 	| OP__				{ $$ = st_int(N_OP__, $1); }
 	| OP_X				{ $$ = st_int(N_OP_X, $1); }
 	| OP_BLC expr		{ $$ = st_int(N_OP_BLC, $1); st_arg_app($$, $2); }
@@ -181,22 +174,18 @@ op:
 	| OP_HLT expr		{ $$ = st_int(N_OP_HLT, $1); st_arg_app($$, $2); }
 	;
 
-reg:
-	REG
-	;
-
 norm:
 	normval
 	| '[' normval ']' { $$ = $2; $$->val |= 1<<9; }
 	;
 
 normval:
-	reg { $$ = st_int(N_NORM, $1); }
+	REG { $$ = st_int(N_NORM, $1); }
 	| expr { $$ = st_int(N_NORM, 0); st_arg_app($$, $1); }
-	| reg '+' reg { $$ = st_int(N_NORM, $1|($3<<3)); }
-	| reg '+' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, $3); }
-	| expr '+' reg { $$ = st_int(N_NORM, $3<<3); st_arg_app($$, $1); }
-	| reg '-' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, st_arg(N_UMINUS, $3, NULL)); }
+	| REG '+' REG { $$ = st_int(N_NORM, $1|($3<<3)); }
+	| REG '+' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, $3); }
+	| expr '+' REG { $$ = st_int(N_NORM, $3<<3); st_arg_app($$, $1); }
+	| REG '-' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, st_arg(N_UMINUS, $3, NULL)); }
 	;
 
 /* ---- PRAGMA ----------------------------------------------------------- */
@@ -213,8 +202,8 @@ pragma:
 			YYABORT;
 		}
 	}
-	| P_EQU name expr { $$ = $2; $$->type = N_EQU; st_arg_app($$, $3); }
-	| P_CONST name expr { $$ = st_arg(N_CONST, $2, $3); }
+	| P_EQU NAME expr { $$ = st_str(N_EQU, $2); st_arg_app($$, $3); }
+	| P_CONST NAME expr { $$ = st_str(N_CONST, $2); st_arg_app($$, $3); }
 	| P_LBYTE exprs { $$ = compose_list(N_LBYTE, $2); }
 	| P_RBYTE exprs { $$ = compose_list(N_RBYTE, $2); }
 	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
@@ -225,15 +214,15 @@ pragma:
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
-	| P_ENTRY name { $$ = st_arg(N_ENTRY, $2, NULL); }
-	| P_GLOBAL name { $$ = st_arg(N_GLOBAL, $2, NULL); }
+	| P_ENTRY NAME { $$ = st_str(N_ENTRY, $2); }
+	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); }
 	;
 
 /* ---- EXPR ------------------------------------------------------------- */
 
 expr:
-	int
-	| name
+	INT { $$ = st_int(N_INT, $1); }
+	| NAME { $$ = st_str(N_NAME, $1); free($1); }
 	| CURLOC { $$ = st_int(N_CURLOC, 0); }
 	| '(' expr ')' { $$ = $2; }
 	| expr '+' expr { $$ = st_arg(N_PLUS, $1, $3, NULL); }
@@ -251,20 +240,12 @@ expr:
 	| '~' expr { $$ = st_arg(N_NEG, $2, NULL); }
 	;
 
-name:
-	NAME { $$ = st_str(N_NAME, $1); free($1); }
-	;
-
 exprs:
 	expr
 	| expr ',' exprs { $$ = st_app($1, $3); }
 	;
 
 /* ---- STORAGE ---------------------------------------------------------- */
-
-int:
-	INT { $$ = st_int(N_INT, $1); }
-	;
 
 float:
 	FLOAT { $$ = st_float(N_FLO, $1); }
