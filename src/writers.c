@@ -15,6 +15,7 @@
 //  Foundation, Inc.,
 //  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,6 +23,13 @@
 
 #include "prog.h"
 #include "st.h"
+
+#define MEM_MAX 64 * 1024
+
+uint16_t image[MEM_MAX];
+uint16_t relocs[MEM_MAX];
+int rel_count;
+int icmax;
 
 // -----------------------------------------------------------------------
 // convert an integer to formatted string with its binary representation
@@ -89,29 +97,63 @@ int writer_debug(struct st *prog, char *ifile, char *ofile)
 }
 
 // -----------------------------------------------------------------------
-int writer_raw(struct st *prog, char *ifile, char *ofile)
+void img_put(struct st *t)
 {
-	struct st *t = prog->args;
-	int icmax = 0;
-	FILE *f;
-	char *output;
+	switch (t->type) {
+		case N_INT:
+			if (t->ic > icmax) icmax = t->ic;
+			image[t->ic] = htons(t->val);
+			if (t->relative) {
+				relocs[rel_count] = t->ic;
+				rel_count++;
+			}
+			break;
+		case N_BLOB:
+			for (int i=0 ; i<t->size ; i++) {
+				if (t->ic+i > icmax) icmax = t->ic+i;
+				image[t->ic+i] = htons(t->data[i]);
+			}
+			break;
+	}
+}
 
-	uint16_t *image = calloc(64 * 1024, sizeof(uint16_t));
+// -----------------------------------------------------------------------
+int img_fill(struct st *prog)
+{
+	struct st *t;
 
+	assert(prog);
+
+	t = prog->args;
 	while (t) {
 		switch (t->type) {
 			case N_INT:
-				if (t->ic > icmax) icmax = t->ic;
-				image[t->ic] = htons(t->val);
-				break;
 			case N_BLOB:
-				for (int i=0 ; i<t->size ; i++) {
-					if (t->ic+i > icmax) icmax = t->ic+i;
-					image[t->ic+i] = htons(t->data[i]);
-				}
+				img_put(t);
 				break;
+			case N_NONE:
+				break;
+			case N_PLUS:
+			case N_MINUS:
+			case N_UMINUS:
+			default:
+				return 1;
 		}
 		t = t->next;
+	}
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int writer_raw(struct st *prog, char *ifile, char *ofile)
+{
+	int res;
+	FILE *f = NULL;
+	char *output;
+
+	if (img_fill(prog)) {
+		return 1;
 	}
 
 	if (ofile) {
@@ -121,18 +163,37 @@ int writer_raw(struct st *prog, char *ifile, char *ofile)
 	}
 
 	f = fopen(output, "w");
-
 	if (!f) {
-		free(image);
 		return 1;
 	}
 
-	fwrite(image, icmax+1, 2, f);
+	res = fwrite(image, icmax+1, 2, f);
+	if (res < 0) {
+		fclose(f);
+		return 1;
+	}
 
 	fclose(f);
-	free(image);
-
 	return 0;
+}
+
+// -----------------------------------------------------------------------
+int writer_emelf(struct st *prog, struct dh_table *symbols, char *ifile, char *ofile)
+{
+	int ret;
+
+ret = 1; goto cleanup;
+
+	if (img_fill(prog)) {
+		ret = 1;
+		goto cleanup;
+	}
+
+	ret = 0;
+
+cleanup:
+	printf("Output type 'emelf' is yet to be implemented.\n");
+	return ret;
 }
 
 

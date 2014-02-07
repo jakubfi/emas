@@ -164,25 +164,27 @@ int main(int argc, char **argv)
 
 	if (res > 0) {
 		res = assemble(program, 1);
-		if (res) {
-			printf("%s\n", aerr);
-			goto cleanup;
-		}
 	}
 
 	switch (otype) {
 		case O_RAW:
+			if (res) {
+				printf("%s\n", aerr);
+				goto cleanup;
+			}
 			res = writer_raw(program, input_file, output_file);
 			break;
 		case O_DEBUG:
+			if (res) {
+				printf("%s\n", aerr);
+				goto cleanup;
+			}
 			res = writer_debug(program, input_file, output_file);
 			break;
 		case O_EMELF:
-			res = 0;
-			printf("Output type 'emelf' is yet to be implemented.\n");
-			goto cleanup;
+			res = writer_emelf(program, sym, input_file, output_file);
+			break;
 		default:
-			res = 0;
 			printf("Unknown output type.\n");
 			goto cleanup;
 	}
