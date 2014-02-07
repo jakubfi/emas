@@ -479,6 +479,11 @@ int eval_equ(struct st *t)
 	struct dh_elem *s;
 	int type = 0;
 
+	u = eval(t->args);
+	if (u < 0) {
+		return u;
+	}
+
 	s = dh_get(sym, t->str);
 
 	if (s) {
@@ -486,16 +491,16 @@ int eval_equ(struct st *t)
 			aaerror(t, "Symbol '%s' cannot be redefined", t->str);
 			return -1;
 		} else if (s->type & SYM_UNDEFINED) {
-			type = s->type & ~SYM_UNDEFINED;
-			dh_delete(sym, t->str);
+			if (!t->args->relative) {
+				aaerror(t, "Trying to define declared .global/.entry symbol as absolute");
+				return -1;
+			} else {
+				type = s->type & ~SYM_UNDEFINED;
+				dh_delete(sym, t->str);
+			}
 		} else { // defined, variable - just redefine
 			dh_delete(sym, t->str);
 		}
-	}
-
-	u = eval(t->args);
-	if (u < 0) {
-		return u;
 	}
 
 	dh_addt(sym, t->str, type, t->args);
@@ -513,21 +518,26 @@ int eval_const(struct st *t)
 	struct dh_elem *s;
 	int type = 0;
 
+	u = eval(t->args);
+	if (u < 0) {
+		return u;
+	}
+
 	s = dh_get(sym, t->str);
 
 	if (s) {
 		if (s->type & SYM_UNDEFINED) {
-			type = s->type & ~SYM_UNDEFINED;
-			dh_delete(sym, t->str);
+			if (!t->args->relative) {
+				aaerror(t, "Trying to define declared .global/.entry symbol as absolute");
+				return -1;
+			} else {
+				type = s->type & ~SYM_UNDEFINED;
+				dh_delete(sym, t->str);
+			}
 		} else {
 			aaerror(t, "Symbol '%s' already defined", t->str);
 			return -1;
 		}
-	}
-
-	u = eval(t->args);
-	if (u < 0) {
-		return u;
 	}
 
 	dh_addt(sym, t->str, SYM_CONST | type, t->args);
@@ -559,6 +569,10 @@ int eval_global(struct st *t)
 	s = dh_get(sym, t->str);
 
 	if (s) {
+		if (!(s->type & SYM_RELATIVE)) {
+			aaerror(t, "%s accepts only relative symbols", eval_tab[t->type].name);
+			return -1;
+		}
 		s->type |= type;
 	} else {
 		dh_addv(sym, t->str, SYM_UNDEFINED | type, 0);
