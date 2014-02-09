@@ -240,7 +240,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 	llerror("Missing include file name");
 	return INVALID_PRAGMA;
 }
-<p_include>[a-zA-Z0-9_.-]+ {
+<p_include>[a-zA-Z0-9_./-]+ {
 	BEGIN(INITIAL);
 	yyin = fopen(yytext, "r");
 	if (!yyin) {
