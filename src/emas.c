@@ -49,19 +49,23 @@ void usage()
 	printf("   -h         : print help and exit\n");
 	printf("   -c <cpu>   : set CPU type: mera400, mx16\n");
 	printf("   -O <otype> : set output type: raw, debug, emelf (defaults to raw)\n");
+	printf("   -I <dir>   : search for include files in <dir>\n");
 }
 
 // -----------------------------------------------------------------------
 int parse_args(int argc, char **argv)
 {
 	int option;
-	while ((option = getopt(argc, argv,"c:O:vh")) != -1) {
+	while ((option = getopt(argc, argv,"I:c:O:vh")) != -1) {
 		switch (option) {
 			case 'c':
 				if (prog_cpu(optarg, CPU_FORCED)) {
 					printf("Unknown cpu: '%s'.\n", optarg);
 					return -1;
 				}
+				break;
+			case 'I':
+				inc_path_add(optarg);
 				break;
 			case 'O':
 				if (!strcmp(optarg, "raw")) {
@@ -143,12 +147,14 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	inc_path_add(".");
+
 	if (yyparse()) {
-		fclose(yyin);
+		if (yyin) fclose(yyin);
 		goto cleanup;
 	}
 
-	fclose(yyin);
+	if (yyin) fclose(yyin);
 
 	if (!program) { // shouldn't happen - parser should always produce program (even empty one)
 		printf("Parse produced empty tree.\n");
@@ -193,6 +199,7 @@ int main(int argc, char **argv)
 
 cleanup:
 	yylex_destroy();
+	st_drop(inc_paths);
 	st_drop(filenames);
 	st_drop(program);
 	dh_destroy(sym);

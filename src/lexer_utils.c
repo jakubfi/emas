@@ -22,6 +22,9 @@
 #include <limits.h>
 #include <math.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "parser.h"
 #include "lexer_utils.h"
@@ -31,6 +34,7 @@ int lexer_err_reported;
 char str_buf[STR_MAX+1];
 int str_len;
 struct st *filenames;
+struct st *inc_paths;
 
 // -----------------------------------------------------------------------
 void llerror(char *s, ...)
@@ -170,6 +174,34 @@ int loc_file(char *fname)
 	filenames = st_app(filenames, cfname);
 	loc_stack[loc_pos].filename = cfname->str;
 	return 0;
+}
+
+// -----------------------------------------------------------------------
+int inc_path_add(char *path)
+{
+	struct st *incpath = st_str(0, path);
+	inc_paths = st_app(inc_paths, incpath);
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+FILE * inc_open(char *filename)
+{
+	struct st *path = inc_paths;
+	char pbuf[STR_MAX+1];
+
+	while (path) {
+		int i = snprintf(pbuf, STR_MAX, "%s/%s", path->str, filename);
+		if (i > 0) {
+			FILE *f = fopen(pbuf, "r");
+			if (f) {
+				return f;
+			}
+		}
+		path = path->next;
+	}
+
+	return NULL;
 }
 
 // vim: tabstop=4 autoindent

@@ -18,6 +18,8 @@
 #ifndef LEXER_UTILS_H
 #define LEXER_UTILS_H
 
+#include <stdio.h>
+
 extern int yylineno;
 
 #define STR_MAX 1024
@@ -35,6 +37,7 @@ struct loc {
 struct loc loc_stack[INCLUDE_MAX+1];
 int loc_pos;
 struct st *filenames;
+struct st *inc_paths;
 
 extern char str_buf[STR_MAX+1];
 extern int str_len;
@@ -49,6 +52,8 @@ void loc_update(int len);
 int loc_push(char *fname);
 int loc_pop();
 int loc_file(char *fname);
+int inc_path_add(char *path);
+FILE * inc_open(char *filename);
 
 #endif
 

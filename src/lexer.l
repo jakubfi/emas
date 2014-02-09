@@ -242,9 +242,9 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 }
 <p_include>[a-zA-Z0-9_./-]+ {
 	BEGIN(INITIAL);
-	yyin = fopen(yytext, "r");
+	yyin = inc_open(yytext);
 	if (!yyin) {
-		llerror("Cannot open include file: '%s'", yytext);
+		llerror("Cannot find file: '%s' in any of include paths, or cannot open it", yytext);
 		return INVALID_PRAGMA;
 	}
 	if (loc_push(yytext) < 0) {
