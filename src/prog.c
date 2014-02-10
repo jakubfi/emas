@@ -30,6 +30,8 @@
 
 struct dh_table *sym;
 struct st *program;
+struct st *entry;
+int is_os;
 
 char aerr[MAX_ERRLEN+1];
 
@@ -65,8 +67,9 @@ static struct eval_t eval_tab[] = {
 	{ ".org",	eval_org },
 	{ ".ascii",	eval_string },
 	{ ".asciiz",eval_string },
-	{ ".entry",	eval_global },
+	{ ".entry",	eval_entry },
 	{ ".global",eval_global },
+	{ ".os",	eval_os },
 	{ "LABEL",	eval_label },
 	{ ".equ",	eval_equ },
 	{ ".const",	eval_const },
@@ -549,34 +552,59 @@ int eval_const(struct st *t)
 }
 
 // -----------------------------------------------------------------------
+int eval_entry(struct st *t)
+{
+	assert(t->str);
+
+	if (is_os) {
+		aaerror(t, "Cannot define arbitrary entry point for OS object");
+		return -1;
+	}
+
+	if (entry) {
+		aaerror(t, "Program entry already defined");
+		return -1;
+	}
+
+	entry = st_str(N_NAME, t->str);
+
+	t->type = N_NONE;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 int eval_global(struct st *t)
 {
-	int type = 0;
 	struct dh_elem *s;
-
-	switch (t->type) {
-		case N_GLOBAL:
-			type = SYM_GLOBAL;
-			break;
-		case N_ENTRY:
-			type = SYM_ENTRY;
-			break;
-		default:
-			assert(!"unknown node type for .global/.entry");
-			return -1;
-	}
 
 	s = dh_get(sym, t->str);
 
 	if (s) {
 		if (!(s->type & SYM_RELATIVE)) {
-			aaerror(t, "%s accepts only relative symbols", eval_tab[t->type].name);
+			aaerror(t, "Only relative symbol can be global");
 			return -1;
 		}
-		s->type |= type;
+		s->type |= SYM_GLOBAL;
 	} else {
-		dh_addv(sym, t->str, SYM_UNDEFINED | type, 0);
+		dh_addv(sym, t->str, SYM_UNDEFINED | SYM_GLOBAL, 0);
 	}
+
+	t->type = N_NONE;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_os(struct st *t)
+{
+	if (entry) {
+		aaerror(t, "Program entry defined, cannot make object an OS one");
+		return -1;
+	}
+
+	entry = st_int(N_INT, 0);
+	is_os = 1;
 
 	t->type = N_NONE;
 

@@ -289,6 +289,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
  /* ---- EOF ------------------------------------------------------------- */
 
 <<EOF>> {
+	yy_top_state(); // just to suppress warning
 	yypop_buffer_state();
 	loc_pop();
 	if (!YY_CURRENT_BUFFER) {
