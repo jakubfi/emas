@@ -30,11 +30,13 @@
 %option noinput
 %option noyywrap
 %option yylineno
+%option stack
 %x str
 %x p_include
 %x p_line
 %x p_file
 %s comment
+%s p_float
 
 nl		(\n)|(\r\n)|(\f)|(\v)
 ws		[ \t]+
@@ -60,37 +62,37 @@ name	[a-zA-Z][a-zA-Z0-9_]*
  /* ---- JUNK ------------------------------------------------------------ */
 
 {nl}
-<INITIAL,p_line,p_include>{ws}
-<INITIAL,p_line,p_include>{cmt}
-<INITIAL,p_line,p_include>"/*" { BEGIN(comment); }
+<INITIAL,p_line,p_include,p_float>{ws}
+<INITIAL,p_line,p_include,p_float>{cmt}
+<INITIAL,p_line,p_include,p_float>"/*" { yy_push_state(comment); }
 <comment>"*"
 <comment>[^*]+
-<comment>"*/" { BEGIN(INITIAL); }
+<comment>"*/" { yy_pop_state(); }
 
  /* ---- STRINGS --------------------------------------------------------- */
 
 \" {
-	BEGIN(str);
+	yy_push_state(str);
 	str_len = 0;
 }
 
 <str>\" {
 	str_append('\0');
 	yylval.s = strdup(str_buf);
-	BEGIN(INITIAL);
+	yy_pop_state();
 	return STRING;
 }
 
 <str>{e_oct} {
 	if (!str_append(strtol(yytext+2, NULL, 8))) {
-		BEGIN(INITIAL);
+		yy_pop_state();
 		return INVALID_STRING;
 	}
 }
 
 <str>{e_hex} {
 	if (!str_append(strtol(yytext+2, NULL, 16))) {
-		BEGIN(INITIAL);
+		yy_pop_state();
 		return INVALID_STRING;
 	}
 }
@@ -99,24 +101,24 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 	int c = esc2char(*(yytext+1));
 	if (c < 0) {
 		llerror("Invalid escape sequence: \"%s\"", yytext);
-		BEGIN(INITIAL);
+		yy_pop_state();
 		return INVALID_STRING;
 	}
 	if (!str_append(c)) {
-		BEGIN(INITIAL);
+		yy_pop_state();
 		return INVALID_STRING;
 	}
 }
 
 <str>[^"][ \t]*$ {
 	llerror("Unterminated string");
-	BEGIN(INITIAL);
+	yy_pop_state();
 	return INVALID_STRING;
 }
 
 <str>. {
 	if (!str_append(*yytext)) {
-		BEGIN(INITIAL);
+		yy_pop_state();
 		return INVALID_STRING;
 	}
 }
@@ -155,6 +157,9 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 {oct}   {
 	return lex_int(yytext, 1, 8, &(yylval.v));
 }
+<p_float>{dec} {
+	return lex_float(yytext, &(yylval.f));
+}
 {dec}   {
 	return lex_int(yytext, 0, 10, &(yylval.v));
 }
@@ -190,6 +195,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
  /* ---- PRAGMAS --------------------------------------------------------- */
 
 {pragma} {
+	yy_top_state();
 	struct dh_elem *p = pragma_get(yytext);
 	if (!p) {
 		llerror("Unknown assembler directive: \"%s\"", yytext);
@@ -197,51 +203,54 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 	}
 	switch (p->type) {
 		case P_INCLUDE:
-			BEGIN(p_include);
+			yy_push_state(p_include);
 			break;
 		case P_LINE:
-			BEGIN(p_line);
+			yy_push_state(p_line);
 			break;
 		case P_FILE:
-			BEGIN(p_file);
+			yy_push_state(p_file);
 			break;
+		case P_FLOAT:
+			yy_push_state(p_float);
+			return p->type;
 		default:
 			return p->type;
 	}
 }
 
 <p_line>{nl} {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	llerror("Missing line number");
 	return INVALID_PRAGMA;
 }
 <p_line>[^0-9\n\r\v\f \t;/*]+ {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	llerror("Not a line number: '%s'", yytext);
 	return INVALID_PRAGMA;
 }
 <p_line>[0-9]+ {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	yylineno = strtol(yytext, NULL, 10) - 1;
 }
 
 <p_file>{nl} {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	llerror("Missing file name");
 	return INVALID_PRAGMA;
 }
 <p_file>[a-zA-Z0-9_.-]+ {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	loc_file(yytext);
 }
 
 <p_include>{nl} {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	llerror("Missing include file name");
 	return INVALID_PRAGMA;
 }
 <p_include>[a-zA-Z0-9_./-]+ {
-	BEGIN(INITIAL);
+	yy_pop_state();
 	yyin = inc_open(yytext);
 	if (!yyin) {
 		llerror("Cannot find file: '%s' in any of include paths, or cannot open it", yytext);
@@ -257,6 +266,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 
  /* ---- LABEL ----------------------------------------------------------- */
 {name}":" {
+	yy_top_state();
 	yylval.s = strdup(yytext);
 	yylval.s[yyleng-1] = '\0';
 	return LABEL;
@@ -267,6 +277,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 {name} {
 	struct dh_elem *p = mnemo_get(yytext);
 	if (p) {
+		yy_top_state();
 		yylval.v = p->value;
 		return p->type;
 	} else {

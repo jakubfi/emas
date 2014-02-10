@@ -250,8 +250,6 @@ exprs:
 float:
 	FLOAT { $$ = st_float(N_FLO, $1); }
 	| '-' FLOAT { $$ = st_float(N_FLO, -$2); }
-	| INT { $$ = st_float(N_FLO, $1); }
-	| '-'INT { $$ = st_float(N_FLO, -$2); }
 	;
 
 floats:
