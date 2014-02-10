@@ -195,7 +195,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
  /* ---- PRAGMAS --------------------------------------------------------- */
 
 {pragma} {
-	yy_top_state();
+	while (YY_START != INITIAL) yy_pop_state();
 	struct dh_elem *p = pragma_get(yytext);
 	if (!p) {
 		llerror("Unknown assembler directive: \"%s\"", yytext);
@@ -266,7 +266,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 
  /* ---- LABEL ----------------------------------------------------------- */
 {name}":" {
-	yy_top_state();
+	while (YY_START != INITIAL) yy_pop_state();
 	yylval.s = strdup(yytext);
 	yylval.s[yyleng-1] = '\0';
 	return LABEL;
@@ -277,7 +277,7 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 {name} {
 	struct dh_elem *p = mnemo_get(yytext);
 	if (p) {
-		yy_top_state();
+		while (YY_START != INITIAL) yy_pop_state();
 		yylval.v = p->value;
 		return p->type;
 	} else {
