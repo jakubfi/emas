@@ -456,15 +456,19 @@ int eval_string(struct st *t)
 int eval_label(struct st *t)
 {
 	struct dh_elem *s;
+	struct st *tic;
 
 	s = dh_get(sym, t->str);
 
 	if (!s) {
-		dh_addv(sym, t->str, SYM_RELATIVE | SYM_CONST, ic);
+		tic = st_int(N_INT, ic);
+		tic->relative = 1;
+		dh_addt(sym, t->str, SYM_CONST, tic);
 	} else if (s->type & SYM_UNDEFINED) {
 		s->type &= ~SYM_UNDEFINED;
-		s->type |= SYM_RELATIVE | SYM_CONST;
-		s->value = ic;
+		s->type |= SYM_CONST;
+		s->t = st_int(N_INT, ic);
+		s->t->relative = 1;
 	} else {
 		aaerror(t, "Symbol '%s' already defined", t->str);
 		return -1;
@@ -480,7 +484,6 @@ int eval_equ(struct st *t)
 {
 	int u;
 	struct dh_elem *s;
-	int type = 0;
 
 	u = eval(t->args);
 	if (u < 0) {
@@ -489,24 +492,18 @@ int eval_equ(struct st *t)
 
 	s = dh_get(sym, t->str);
 
-	if (s) {
-		if (s->type & SYM_CONST) { // defined, but constant
-			aaerror(t, "Symbol '%s' cannot be redefined", t->str);
-			return -1;
-		} else if (s->type & SYM_UNDEFINED) {
-			if (!t->args->relative) {
-				aaerror(t, "Trying to define declared .global/.entry symbol as absolute");
-				return -1;
-			} else {
-				type = s->type & ~SYM_UNDEFINED;
-				dh_delete(sym, t->str);
-			}
-		} else { // defined, variable - just redefine
-			dh_delete(sym, t->str);
-		}
+	if (!s) {
+		dh_addt(sym, t->str, 0, t->args);
+	} else if (s->type & SYM_CONST) { // defined, but constant
+		aaerror(t, "Symbol '%s' cannot be redefined", t->str);
+		return -1;
+	} else if (s->type & SYM_UNDEFINED) { // is there, but undefined
+		s->type &= ~SYM_UNDEFINED;
+		s->t = t->args;
+	} else { // defined, variable - just redefine
+		st_drop(s->t);
+		s->t = t->args;
 	}
-
-	dh_addt(sym, t->str, type, t->args);
 
 	t->type = N_NONE;
 	t->args = NULL;
@@ -519,7 +516,6 @@ int eval_const(struct st *t)
 {
 	int u;
 	struct dh_elem *s;
-	int type = 0;
 
 	u = eval(t->args);
 	if (u < 0) {
@@ -528,22 +524,15 @@ int eval_const(struct st *t)
 
 	s = dh_get(sym, t->str);
 
-	if (s) {
-		if (s->type & SYM_UNDEFINED) {
-			if (!t->args->relative) {
-				aaerror(t, "Trying to define declared .global/.entry symbol as absolute");
-				return -1;
-			} else {
-				type = s->type & ~SYM_UNDEFINED;
-				dh_delete(sym, t->str);
-			}
-		} else {
-			aaerror(t, "Symbol '%s' already defined", t->str);
-			return -1;
-		}
+	if (!s) {
+		dh_addt(sym, t->str, SYM_CONST, t->args);
+	} else if (s->type & SYM_UNDEFINED) { // is there, but undefined
+		s->type &= ~SYM_UNDEFINED;
+		s->t = t->args;
+	} else {
+		aaerror(t, "Symbol '%s' already defined", t->str);
+		return -1;
 	}
-
-	dh_addt(sym, t->str, SYM_CONST | type, t->args);
 
 	t->type = N_NONE;
 	t->args = NULL;
@@ -554,10 +543,8 @@ int eval_const(struct st *t)
 // -----------------------------------------------------------------------
 int eval_entry(struct st *t)
 {
-	assert(t->str);
-
 	if (is_os) {
-		aaerror(t, "Cannot define arbitrary entry point for OS object");
+		aaerror(t, "Program entry already defined for OS object");
 		return -1;
 	}
 
@@ -566,9 +553,10 @@ int eval_entry(struct st *t)
 		return -1;
 	}
 
-	entry = st_str(N_NAME, t->str);
+	entry = t->args;
 
 	t->type = N_NONE;
+	t->args = NULL;
 
 	return 0;
 }
@@ -581,10 +569,6 @@ int eval_global(struct st *t)
 	s = dh_get(sym, t->str);
 
 	if (s) {
-		if (!(s->type & SYM_RELATIVE)) {
-			aaerror(t, "Only relative symbol can be global");
-			return -1;
-		}
 		s->type |= SYM_GLOBAL;
 	} else {
 		dh_addv(sym, t->str, SYM_UNDEFINED | SYM_GLOBAL, 0);
@@ -622,17 +606,15 @@ int eval_name(struct st *t)
 		return 1;
 	}
 
-	if (s->t) { // entry with tree
-		u = eval(s->t);
-		if (u) {
-			return u;
-		}
-		t->val = s->t->val;
-	} else { // entry with just a value
-		t->val = s->value;
-	}
+	assert(s->t);
 
-	if ((s->type & SYM_RELATIVE) || (s->t->relative)) {
+	u = eval(s->t);
+	if (u) {
+		return u;
+	}
+	t->val = s->t->val;
+
+	if (s->t->relative) {
 		t->relative = 1;
 	}
 

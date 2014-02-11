@@ -215,7 +215,7 @@ pragma:
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
-	| P_ENTRY NAME { $$ = st_str(N_ENTRY, $2); }
+	| P_ENTRY expr { $$ = st_arg(N_ENTRY, $2, NULL); }
 	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); }
 	| P_OS { $$ = st_int(N_OS, 0); }
 	;

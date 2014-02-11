@@ -43,7 +43,6 @@ enum cpu_types {
 
 enum sym_types {
 	SYM_UNDEFINED	= 0b00000001,
-	SYM_RELATIVE	= 0b00000010,
 	SYM_CONST		= 0b00000100,
 	SYM_GLOBAL		= 0b00001000,
 };
