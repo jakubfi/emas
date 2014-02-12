@@ -588,6 +588,7 @@ int eval_os(struct st *t)
 	}
 
 	entry = st_int(N_INT, 0);
+	entry->relative = 1;
 	is_os = 1;
 
 	t->type = N_NONE;
