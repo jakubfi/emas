@@ -69,7 +69,6 @@ static struct eval_t eval_tab[] = {
 	{ ".asciiz",eval_string },
 	{ ".entry",	eval_entry },
 	{ ".global",eval_global },
-	{ ".os",	eval_os },
 	{ "LABEL",	eval_label },
 	{ ".equ",	eval_equ },
 	{ ".const",	eval_const },
@@ -495,7 +494,7 @@ int eval_equ(struct st *t)
 	if (!s) {
 		dh_addt(sym, t->str, 0, t->args);
 	} else if (s->type & SYM_CONST) { // defined, but constant
-		aaerror(t, "Symbol '%s' cannot be redefined", t->str);
+		aaerror(t, "Const symbol '%s' cannot be redefined", t->str);
 		return -1;
 	} else if (s->type & SYM_UNDEFINED) { // is there, but undefined
 		s->type &= ~SYM_UNDEFINED;
@@ -573,23 +572,6 @@ int eval_global(struct st *t)
 	} else {
 		dh_addv(sym, t->str, SYM_UNDEFINED | SYM_GLOBAL, 0);
 	}
-
-	t->type = N_NONE;
-
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int eval_os(struct st *t)
-{
-	if (entry) {
-		aaerror(t, "Program entry defined, cannot make object an OS one");
-		return -1;
-	}
-
-	entry = st_int(N_INT, 0);
-	entry->relative = 1;
-	is_os = 1;
 
 	t->type = N_NONE;
 

@@ -52,7 +52,6 @@ int kw_init()
 	PRAGMA_ADD(".org", P_ORG);
 	PRAGMA_ADD(".entry", P_ENTRY);
 	PRAGMA_ADD(".global", P_GLOBAL);
-	PRAGMA_ADD(".os", P_OS);
 
 	OP_ADD("LW", OP_RN, 0b0100000000000000);
 	OP_ADD("TW", OP_RN, 0b0100010000000000);

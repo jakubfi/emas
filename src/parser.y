@@ -98,7 +98,6 @@ typedef struct YYLTYPE {
 %token P_ORG ".org"
 %token P_ENTRY ".entry"
 %token P_GLOBAL ".global"
-%token P_OS ".os"
 
 %token <v> OP_RN "reg-norm-arg op"
 %token <v> OP_N "norm-arg op"
@@ -217,7 +216,6 @@ pragma:
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
 	| P_ENTRY expr { $$ = st_arg(N_ENTRY, $2, NULL); }
 	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); }
-	| P_OS { $$ = st_int(N_OS, 0); }
 	;
 
 /* ---- EXPR ------------------------------------------------------------- */
