@@ -94,10 +94,8 @@ int parse_args(int argc, char **argv)
 
 	if (optind == argc) {
 		input_file = NULL;
-		output_file = NULL;
 	} else if (optind == argc-1) {
 		input_file = argv[optind];
-		output_file = NULL;
 	} else if (optind == argc-2) {
 		input_file = argv[optind];
 		output_file = strdup(argv[optind+1]);
@@ -178,10 +176,14 @@ int main(int argc, char **argv)
 	}
 
 	if (otype != O_DEBUG) {
-		output_file = strdup("a.out");
+		if (!output_file) {
+			output_file = strdup("a.out");
+		}
 		outf = fopen(output_file, "w");
 	} else {
-		output_file = strdup("(stdout)");
+		if (!output_file) {
+			output_file = strdup("(stdout)");
+		}
 		outf = stdout;
 	}
 	if (!outf) {
