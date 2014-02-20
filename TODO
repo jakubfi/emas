@@ -3,16 +3,6 @@ BUGS:
 
 TODO:
 
-
-* emelf:
-  * structure
-  * library (?)
-  * writer
-  * dumper
-  * linker
-  * assembler output
-  * debug information in emelf
-
 * preprocessor
   * .macro
   * .alias

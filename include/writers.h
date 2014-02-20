@@ -20,9 +20,9 @@
 
 #include "st.h"
 
-int writer_debug(struct st *prog, char *ifile, char *ofile);
-int writer_raw(struct st *prog, char *ifile, char *ofile);
-int writer_emelf(struct st *prog, struct dh_table *symbols, char *ifile, char *ofile);
+int writer_debug(struct st *prog, FILE *f);
+int writer_raw(struct st *prog, FILE *f);
+int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f);
 
 #endif
 

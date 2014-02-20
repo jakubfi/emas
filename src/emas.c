@@ -37,7 +37,7 @@ int yylex_destroy();
 extern FILE *yyin;
 
 char *input_file;
-char *output_file;
+char *output_file = NULL;
 int otype = O_RAW;
 
 // -----------------------------------------------------------------------
@@ -100,7 +100,7 @@ int parse_args(int argc, char **argv)
 		output_file = NULL;
 	} else if (optind == argc-2) {
 		input_file = argv[optind];
-		output_file = argv[optind+1];
+		output_file = strdup(argv[optind+1]);
 	} else {
 		printf("Wrong usage.\n");
 		return -1;
@@ -114,6 +114,7 @@ int main(int argc, char **argv)
 {
 	int ret = 1;
 	int res;
+	FILE *outf;
 
 	res = parse_args(argc, argv);
 
@@ -170,31 +171,46 @@ int main(int argc, char **argv)
 
 	if (res > 0) {
 		res = assemble(program, 1);
+		if (res && (otype != O_EMELF)) {
+			printf("%s\n", aerr);
+			goto cleanup;
+		}
+	}
+
+	if (otype != O_DEBUG) {
+		output_file = strdup("a.out");
+		outf = fopen(output_file, "w");
+	} else {
+		output_file = strdup("(stdout)");
+		outf = stdout;
+	}
+	if (!outf) {
+		printf("Cannot open output file '%s' for writing\n", output_file);
+		goto cleanup;
 	}
 
 	switch (otype) {
 		case O_RAW:
-			if (res) {
-				printf("%s\n", aerr);
-				goto cleanup;
-			}
-			res = writer_raw(program, input_file, output_file);
+			res = writer_raw(program, outf);
 			break;
 		case O_DEBUG:
-			if (res) {
-				printf("%s\n", aerr);
-				goto cleanup;
-			}
-			res = writer_debug(program, input_file, output_file);
+			res = writer_debug(program, outf);
 			break;
 		case O_EMELF:
-			res = writer_emelf(program, sym, input_file, output_file);
+			res = writer_emelf(program, sym, outf);
 			break;
 		default:
 			printf("Unknown output type.\n");
+			fclose(outf);
 			goto cleanup;
 	}
 
+	fclose(outf);
+
+	if (res) {
+		printf("Error writing output file: %s\n", aerr);
+		goto cleanup;
+	}
 	ret = 0;
 
 cleanup:
@@ -205,6 +221,7 @@ cleanup:
 	dh_destroy(sym);
 	st_drop(entry);
 	kw_destroy();
+	free(output_file);
 
 	return ret;
 }

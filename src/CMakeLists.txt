@@ -15,6 +15,8 @@ keywords.c
 writers.c
 )
 
+TARGET_LINK_LIBRARIES(emas emelf)
+
 install(TARGETS emas RUNTIME DESTINATION bin)
 
 # vim: tabstop=4

@@ -31,7 +31,6 @@
 struct dh_table *sym;
 struct st *program;
 struct st *entry;
-int is_os;
 
 char aerr[MAX_ERRLEN+1];
 
@@ -40,7 +39,7 @@ int cpu = CPU_DEFAULT;
 int ic_max = 32767;
 
 // table indexed by node type, order here must match enum node_types
-static struct eval_t eval_tab[] = {
+struct eval_t eval_tab[] = {
 	{ "NONE",	eval_none },
 	{ "INT",	eval_none },
 	{ "BLOB",	eval_none },
@@ -95,13 +94,14 @@ static struct eval_t eval_tab[] = {
 // -----------------------------------------------------------------------
 void aaerror(struct st *t, char *format, ...)
 {
-	assert(t && format);
-
 	va_list ap;
+	int len = 0;
 
-	int len = snprintf(aerr, MAX_ERRLEN, "%s:%d:%d: ", t->loc_file, t->loc_line, t->loc_col);
+	if (t) {
+		len = snprintf(aerr, MAX_ERRLEN, "%s:%d:%d: ", t->loc_file, t->loc_line, t->loc_col);
+	}
 
-	if (len && (len<MAX_ERRLEN)) {
+	if (len<MAX_ERRLEN) {
 		va_start(ap, format);
 		vsnprintf(aerr+len, MAX_ERRLEN-len, format, ap);
 		va_end(ap);
@@ -313,6 +313,7 @@ int eval_word(struct st *t)
 	}
 
 	t->type = N_INT;
+	t->relative = t->args->relative;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -542,11 +543,6 @@ int eval_const(struct st *t)
 // -----------------------------------------------------------------------
 int eval_entry(struct st *t)
 {
-	if (is_os) {
-		aaerror(t, "Program entry already defined for OS object");
-		return -1;
-	}
-
 	if (entry) {
 		aaerror(t, "Program entry already defined");
 		return -1;
