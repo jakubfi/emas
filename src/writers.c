@@ -146,48 +146,48 @@ int writer_raw(struct st *prog, FILE *f)
 static int try_reloc(struct st *t, struct emelf *e)
 {
 	int sym_idx;
-	struct st *op, *arg1, *arg2;
+	struct st *op = NULL, *arg1 = NULL, *arg2 = NULL;
 	struct st *arg_sym = NULL;
 	struct st *arg_int = NULL;
 
-	int oper;
+	int flags = 0;
 
 	if (t->type != N_WORD) {
 		return 1;
 	}
 
 	op = t->args;
-	arg1 = op->args;
-	arg2 = arg1->next;
+	if (op) arg1 = op->args;
+	if (arg1) arg2 = arg1->next;
 
 	switch (op->type) {
+		case N_NAME:
+			arg_sym = op;
+			break;
 		case N_UMINUS:
 			if (arg1->type == N_NAME) {
 				arg_sym = arg1;
-				oper = EMELF_RELOC_OP_SUB;
+				flags = EMELF_RELOC_SYM_NEG;
 			}
 			break;
 		case N_PLUS:
 			if ((arg1->type == N_NAME) && (arg2->type == N_INT)) {
 				arg_sym = arg1;
 				arg_int = arg2;
-				oper = EMELF_RELOC_OP_ADD;
 			} else if ((arg1->type == N_INT) && (arg2->type == N_NAME)) {
 				arg_int = arg1;
 				arg_sym = arg2;
-				oper = EMELF_RELOC_OP_ADD;
 			}
 			break;
 		case N_MINUS:
 			if ((arg1->type == N_NAME) && (arg2->type == N_INT)) {
 				arg_sym = arg1;
 				arg_int = arg2;
-				oper = EMELF_RELOC_OP_ADD;
 				arg_int->val *= -1;
 			} else if ((arg1->type == N_INT) && (arg2->type == N_NAME)) {
 				arg_int = arg1;
 				arg_sym = arg2;
-				oper = EMELF_RELOC_OP_SUB;
+				flags = EMELF_RELOC_SYM_NEG;
 			}
 			break;
 		default:
@@ -198,14 +198,18 @@ static int try_reloc(struct st *t, struct emelf *e)
 		return 1;
 	}
 
-	sym_idx = emelf_symbol_add(e, EMELF_SYM_NOFLAGS, arg_sym->str, 0);
-	emelf_reloc_add(e, t->ic, EMELF_RELOC_SYM, oper, sym_idx);
 	if (arg_int) {
 		image[t->ic] = htons(arg_int->val);
+		if (arg_int->relative) {
+			flags |= EMELF_RELOC_BASE;
+		}
 	} else {
 		image[t->ic] = htons(0);
 	}
 	if (t->ic > icmax) icmax = t->ic;
+
+	sym_idx = emelf_symbol_add(e, EMELF_SYM_NOFLAGS, arg_sym->str, 0);
+	emelf_reloc_add(e, t->ic, EMELF_RELOC_SYM | flags, sym_idx);
 
 	return 0;
 }
@@ -241,7 +245,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 	struct emelf *e = NULL;
 	struct st *t;
 
-	e = emelf_create(EMELF_RELOC, EMELF_FLAG_NONE, (cpu == CPU_MX16) ? EMELF_CPU_MX16 : EMELF_CPU_MERA400);
+	e = emelf_create(EMELF_RELOC, (cpu == CPU_MX16) ? EMELF_CPU_MX16 : EMELF_CPU_MERA400);
 	if (!e) {
 		aaerror(NULL, "Error creating emelf structure");
 		goto cleanup;
@@ -252,7 +256,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 		switch (t->type) {
 			case N_INT:
 				if (t->relative) {
-					emelf_reloc_add(e, t->ic, EMELF_RELOC_BASE, EMELF_RELOC_OP_ADD, -1);
+					emelf_reloc_add(e, t->ic, EMELF_RELOC_BASE, -1);
 				}
 			case N_BLOB:
 				img_put(t);
