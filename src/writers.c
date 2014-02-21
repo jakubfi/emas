@@ -127,7 +127,7 @@ int writer_raw(struct st *prog, FILE *f)
 			case N_NONE:
 				break;
 			default:
-				aaerror(t, "Cannot write unevaluated node '%s'", eval_tab[t->type]);
+				aaerror(t, "Relocation not possible for raw output");
 				return 1;
 		}
 		t = t->next;
@@ -247,7 +247,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 
 	e = emelf_create(EMELF_RELOC, (cpu == CPU_MX16) ? EMELF_CPU_MX16 : EMELF_CPU_MERA400);
 	if (!e) {
-		aaerror(NULL, "Error creating emelf structure");
+		aaerror(NULL, "Error creating EMELF structure");
 		goto cleanup;
 	}
 
@@ -265,7 +265,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 				break;
 			default:
 				if (try_reloc(t, e)) {
-					aaerror(t, "Cannot write unevaluated node '%s'", eval_tab[t->type]);
+					aaerror(t, "Unable to relocate");
 					goto cleanup;
 				}
 				break;

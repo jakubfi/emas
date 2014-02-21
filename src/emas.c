@@ -210,7 +210,7 @@ int main(int argc, char **argv)
 	fclose(outf);
 
 	if (res) {
-		printf("Error writing output file: %s\n", aerr);
+		printf("%s\n", aerr);
 		goto cleanup;
 	}
 	ret = 0;

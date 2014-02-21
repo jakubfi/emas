@@ -3,6 +3,8 @@ BUGS:
 
 TODO:
 
+* simplify +/- expressions for relocation
+
 * preprocessor
   * .macro
   * .alias
