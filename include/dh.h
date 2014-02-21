@@ -40,8 +40,6 @@ struct dh_table {
 struct dh_table * dh_create(int size, int case_sens);
 unsigned dh_hash(struct dh_table *dh, char *name);
 struct dh_elem * dh_get(struct dh_table *dh, char *name);
-struct dh_elem * dh_gett(struct dh_table *dh, char *name, int type_mask);
-struct dh_elem * dh_getnt(struct dh_table *dh, char *name, int type_mask);
 struct dh_elem * dh_add(struct dh_table *dh, char *name, int type, int value, struct st *t);
 #define dh_addv(dh, name, type, value) dh_add(dh, name, type, value, NULL)
 #define dh_addt(dh, name, type, t) dh_add(dh, name, type, 0, t)

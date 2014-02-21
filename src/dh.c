@@ -80,28 +80,6 @@ struct dh_elem * dh_get(struct dh_table *dh, char *name)
 }
 
 // -----------------------------------------------------------------------
-struct dh_elem * dh_gett(struct dh_table *dh, char *name, int type_mask)
-{
-	struct dh_elem *e = dh_gett(dh, name, 0);
-	if (!e || ((e->type & type_mask) != type_mask)) {
-		return NULL;
-	} else {
-		return e;
-	}
-}
-
-// -----------------------------------------------------------------------
-struct dh_elem * dh_getnt(struct dh_table *dh, char *name, int type_mask)
-{
-	struct dh_elem *e = dh_gett(dh, name, 0);
-	if (!e || (e->type & type_mask)) {
-		return NULL;
-	} else {
-		return e;
-	}
-}
-
-// -----------------------------------------------------------------------
 struct dh_elem * dh_add(struct dh_table *dh, char *name, int type, int value, struct st *t)
 {
 	unsigned hash = dh_hash(dh, name);
