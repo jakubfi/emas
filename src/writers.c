@@ -100,12 +100,12 @@ static void img_put(struct st *t)
 	switch (t->type) {
 		case N_INT:
 			if (t->ic > icmax) icmax = t->ic;
-			image[t->ic] = htons(t->val);
+			image[t->ic] = t->val;
 			break;
 		case N_BLOB:
 			for (int i=0 ; i<t->size ; i++) {
 				if (t->ic+i > icmax) icmax = t->ic+i;
-				image[t->ic+i] = htons(t->data[i]);
+				image[t->ic+i] = t->data[i];
 			}
 			break;
 	}
@@ -116,6 +116,7 @@ int writer_raw(struct st *prog, FILE *f)
 {
 	int res;
 	struct st *t;
+	int pos;
 
 	t = prog->args;
 	while (t) {
@@ -133,7 +134,13 @@ int writer_raw(struct st *prog, FILE *f)
 		t = t->next;
 	}
 
-	res = fwrite(image, icmax+1, 2, f);
+	pos = icmax;
+	while (pos >= 0) {
+		image[pos] = htons(image[pos]);
+		pos--;
+	}
+
+	res = fwrite(image, 2, icmax+1, f);
 	if (res < 0) {
 		aaerror(NULL, "Write failed");
 		return 1;
