@@ -103,7 +103,7 @@ static void img_put(struct st *t)
 			break;
 		case N_BLOB:
 			for (int i=0 ; i<t->size ; i++) {
-				if (t->ic+1 > image_size) image_size = t->ic+1;
+				if (t->ic+i+1 > image_size) image_size = t->ic+i+1;
 				image[t->ic+i] = t->data[i];
 			}
 			break;
