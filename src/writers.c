@@ -28,8 +28,7 @@
 #define MEM_MAX 64 * 1024
 
 uint16_t image[MEM_MAX];
-int rel_count;
-int icmax;
+int image_size;
 
 // -----------------------------------------------------------------------
 // convert an integer to formatted string with its binary representation
@@ -99,12 +98,12 @@ static void img_put(struct st *t)
 {
 	switch (t->type) {
 		case N_INT:
-			if (t->ic > icmax) icmax = t->ic;
+			if (t->ic+1 > image_size) image_size = t->ic+1;
 			image[t->ic] = t->val;
 			break;
 		case N_BLOB:
 			for (int i=0 ; i<t->size ; i++) {
-				if (t->ic+i > icmax) icmax = t->ic+i;
+				if (t->ic+1 > image_size) image_size = t->ic+1;
 				image[t->ic+i] = t->data[i];
 			}
 			break;
@@ -134,13 +133,13 @@ int writer_raw(struct st *prog, FILE *f)
 		t = t->next;
 	}
 
-	pos = icmax;
+	pos = image_size - 1;
 	while (pos >= 0) {
 		image[pos] = htons(image[pos]);
 		pos--;
 	}
 
-	res = fwrite(image, 2, icmax+1, f);
+	res = fwrite(image, 2, image_size, f);
 	if (res < 0) {
 		aaerror(NULL, "Write failed");
 		return 1;
@@ -206,14 +205,14 @@ static int try_reloc(struct st *t, struct emelf *e)
 	}
 
 	if (arg_int) {
-		image[t->ic] = htons(arg_int->val);
+		image[t->ic] = arg_int->val;
 		if (arg_int->relative) {
 			flags |= EMELF_RELOC_BASE;
 		}
 	} else {
-		image[t->ic] = htons(0);
+		image[t->ic] = 0;
 	}
-	if (t->ic > icmax) icmax = t->ic;
+	if (t->ic+1 > image_size) image_size = t->ic+1;
 
 	sym_idx = emelf_symbol_add(e, EMELF_SYM_NOFLAGS, arg_sym->str, 0);
 	emelf_reloc_add(e, t->ic, EMELF_RELOC_SYM | flags, sym_idx);
@@ -284,7 +283,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 		goto cleanup;
 	}
 
-	res = emelf_image_append(e, image, icmax+1);
+	res = emelf_image_append(e, image, image_size);
 	if (res != EMELF_E_OK) {
 		aaerror(NULL, "Cannot append image to output emelf structure");
 		goto cleanup;
