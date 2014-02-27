@@ -68,6 +68,7 @@ int writer_debug(struct st *prog, FILE *f)
 	struct st *t = prog->args;
 	char *bin;
 
+	AADEBUG("==== DEBUG writer ================================");
 	while (t) {
 		switch (t->type) {
 			case N_INT:
@@ -118,6 +119,7 @@ int writer_raw(struct st *prog, FILE *f)
 	struct st *t;
 	int pos;
 
+	AADEBUG("==== RAW writer ================================");
 	t = prog->args;
 	while (t) {
 		switch (t->type) {
@@ -168,6 +170,8 @@ static int try_reloc(struct st *t, struct emelf *e)
 	op = t->args;
 	if (op) arg1 = op->args;
 	if (arg1) arg2 = arg1->next;
+
+	AADEBUG("try_reloc() ic: %i, op: %s", t->ic, eval_tab[op->type].name);
 
 	switch (op->type) {
 		case N_NAME:
@@ -253,6 +257,8 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 	int ret = 1;
 	struct emelf *e = NULL;
 	struct st *t;
+
+	AADEBUG("==== EMELF writer ================================");
 
 	e = emelf_create(EMELF_RELOC, (cpu == CPU_MX16) ? EMELF_CPU_MX16 : EMELF_CPU_MERA400);
 	if (!e) {

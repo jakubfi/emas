@@ -33,6 +33,7 @@ extern struct st *entry;
 extern int cpu;
 
 extern char aerr[MAX_ERRLEN+1];
+extern int aadebug;
 
 enum cpu_types {
 	CPU_DEFAULT			= 0,
@@ -106,6 +107,7 @@ struct eval_t {
 
 extern struct eval_t eval_tab[];
 
+void AADEBUG(char *format, ...);
 void aaerror(struct st *t, char *format, ...);
 
 int prog_cpu(char *cpu_name, int force);
@@ -133,7 +135,7 @@ int eval_none(struct st *t);
 int eval_err(struct st *t);
 
 int eval(struct st *t);
-int assemble(struct st *prog, int pass);
+int assemble(struct st *prog, int keep_going);
 
 #endif
 

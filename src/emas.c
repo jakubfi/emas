@@ -50,13 +50,14 @@ void usage()
 	printf("   -c <cpu>   : set CPU type: mera400, mx16\n");
 	printf("   -O <otype> : set output type: raw, debug, emelf (defaults to emelf)\n");
 	printf("   -I <dir>   : search for include files in <dir>\n");
+	printf("   -d         : print debug information to stderr (lots of)\n");
 }
 
 // -----------------------------------------------------------------------
 int parse_args(int argc, char **argv)
 {
 	int option;
-	while ((option = getopt(argc, argv,"I:c:O:vh")) != -1) {
+	while ((option = getopt(argc, argv,"I:c:O:vhd")) != -1) {
 		switch (option) {
 			case 'c':
 				if (prog_cpu(optarg, CPU_FORCED)) {
@@ -86,6 +87,9 @@ int parse_args(int argc, char **argv)
 			case 'v':
 				printf("EMAS v%s - modern MERA 400 assembler\n", EMAS_VERSION);
 				exit(0);
+				break;
+			case 'd':
+				aadebug = 1;
 				break;
 			default:
 				return -1;
@@ -148,6 +152,7 @@ int main(int argc, char **argv)
 
 	inc_path_add(".");
 
+	AADEBUG("==== Parse ================================");
 	if (yyparse()) {
 		if (yyin) fclose(yyin);
 		goto cleanup;
@@ -160,18 +165,22 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	res = assemble(program, 0);
+	res = assemble(program, 1);
 
 	if (res < 0) {
 		printf("%s\n", aerr);
 		goto cleanup;
-	}
-
-	if (res > 0) {
-		res = assemble(program, 1);
-		if (res && (otype != O_EMELF)) {
-			printf("%s\n", aerr);
-			goto cleanup;
+	} else if (res > 0) {
+		if (otype == O_EMELF) {
+			if (assemble(program, 1) < 0) {
+				printf("%s\n", aerr);
+				goto cleanup;
+			}
+		} else {
+			if (assemble(program, 0)) {
+				printf("%s\n", aerr);
+				goto cleanup;
+			}
 		}
 	}
 

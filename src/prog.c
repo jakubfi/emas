@@ -33,6 +33,7 @@ struct st *program;
 struct st *entry;
 
 char aerr[MAX_ERRLEN+1];
+int aadebug;
 
 int ic;
 int cpu = CPU_DEFAULT;
@@ -92,6 +93,18 @@ struct eval_t eval_tab[] = {
 };
 
 // -----------------------------------------------------------------------
+void AADEBUG(char *format, ...)
+{
+	if (!aadebug) return;
+	fprintf(stderr, "DEBUG: ");
+	va_list ap;
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	fprintf(stderr, "\n");
+	va_end(ap);
+}
+
+// -----------------------------------------------------------------------
 void aaerror(struct st *t, char *format, ...)
 {
 	va_list ap;
@@ -106,6 +119,7 @@ void aaerror(struct st *t, char *format, ...)
 		vsnprintf(aerr+len, MAX_ERRLEN-len, format, ap);
 		va_end(ap);
 	}
+	AADEBUG("Error logged: %s", aerr);
 }
 // -----------------------------------------------------------------------
 int prog_cpu(char *cpu_name, int force)
@@ -745,12 +759,15 @@ int eval(struct st *t)
 		return eval_err(t);
 	}
 
+	AADEBUG(" eval: %s", eval_tab[t->type].name);
+
 	return eval_tab[t->type].fun(t);
 }
 
 // -----------------------------------------------------------------------
-int assemble(struct st *prog, int pass)
+int assemble(struct st *prog, int keep_going)
 {
+	AADEBUG("==== Assemble ================================");
 	struct st *t = prog->args;
 	int u = 0;
 	int uret = 0;
@@ -767,15 +784,15 @@ int assemble(struct st *prog, int pass)
 		} else {
 			ic = t->ic;
 		}
+		AADEBUG("---- IC=%i, Top node: %s ----", ic, eval_tab[t->type].name);
 		u = eval(t);
+		AADEBUG("---- eval ret: %i", u);
 		ic += t->size;
-		if (u < 0) {
+		if ((u < 0) || ((u > 0) && !keep_going)) {
 			return u;
+		} else {
+			uret += u;
 		}
-		if ((pass > 0) && (u > 0)) {
-			return -1;
-		}
-		uret += u;
 		t = t->next;
 	}
 

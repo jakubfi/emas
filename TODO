@@ -7,7 +7,7 @@ TODO:
 
 * preprocessor
   * .macro
-  * .alias
+  * .alias (.define?)
   * .def
   * .ifdef/.ifund
 
