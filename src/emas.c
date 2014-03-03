@@ -43,21 +43,22 @@ int otype = O_EMELF;
 // -----------------------------------------------------------------------
 void usage()
 {
-	printf("Usage: emas [options] [input [output]]\n");
+	printf("Usage: emas [options] [input]\n");
 	printf("Where options are one or more of:\n");
-	printf("   -v         : print version and exit\n");
-	printf("   -h         : print help and exit\n");
-	printf("   -c <cpu>   : set CPU type: mera400, mx16\n");
-	printf("   -O <otype> : set output type: raw, debug, emelf (defaults to emelf)\n");
-	printf("   -I <dir>   : search for include files in <dir>\n");
-	printf("   -d         : print debug information to stderr (lots of)\n");
+	printf("   -o <output> : set output file\n");
+	printf("   -c <cpu>    : set CPU type: mera400, mx16\n");
+	printf("   -O <otype>  : set output type: raw, debug, emelf (defaults to emelf)\n");
+	printf("   -I <dir>    : search for include files in <dir>\n");
+	printf("   -d          : print debug information to stderr (lots of)\n");
+	printf("   -v          : print version and exit\n");
+	printf("   -h          : print help and exit\n");
 }
 
 // -----------------------------------------------------------------------
 int parse_args(int argc, char **argv)
 {
 	int option;
-	while ((option = getopt(argc, argv,"I:c:O:vhd")) != -1) {
+	while ((option = getopt(argc, argv,"I:c:O:vhdo:")) != -1) {
 		switch (option) {
 			case 'c':
 				if (prog_cpu(optarg, CPU_FORCED)) {
@@ -91,6 +92,9 @@ int parse_args(int argc, char **argv)
 			case 'd':
 				aadebug = 1;
 				break;
+			case 'o':
+				output_file = strdup(optarg);
+				break;
 			default:
 				return -1;
 		}
@@ -100,9 +104,6 @@ int parse_args(int argc, char **argv)
 		input_file = NULL;
 	} else if (optind == argc-1) {
 		input_file = argv[optind];
-	} else if (optind == argc-2) {
-		input_file = argv[optind];
-		output_file = strdup(argv[optind+1]);
 	} else {
 		printf("Wrong usage.\n");
 		return -1;
