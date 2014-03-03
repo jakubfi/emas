@@ -45,7 +45,7 @@ void usage()
 {
 	printf("Usage: emas [options] [input]\n");
 	printf("Where options are one or more of:\n");
-	printf("   -o <output> : set output file\n");
+	printf("   -o <output> : set output file (a.out otherwise)\n");
 	printf("   -c <cpu>    : set CPU type: mera400, mx16\n");
 	printf("   -O <otype>  : set output type: raw, debug, emelf (defaults to emelf)\n");
 	printf("   -I <dir>    : search for include files in <dir>\n");
