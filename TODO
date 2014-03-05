@@ -3,8 +3,8 @@ BUGS:
 
 TODO:
 
+* r40 strings?
 * simplify +/- expressions for relocation
-
 * preprocessor
   * .macro
   * .alias (.define?)

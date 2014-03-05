@@ -88,6 +88,36 @@ int flag2mask(char c)
 }
 
 // -----------------------------------------------------------------------
+int str2r40(char *str)
+{
+	int val = 0;
+	int mul = 1600;
+	char *s = str;
+
+	while (*s) {
+		if ((*s >= 'A') && (*s <= 'Z')) {
+			val += mul * (*s - 64);
+		} else if ((*s >= 'a') && (*s <= 'z')) {
+			val += mul * (*s - 96);
+		} else if ((*s >= '0') && (*s <= '9')) {
+			val += mul * (*s - 21);
+		} else if (*s == ' ') {
+			val += mul * 0;
+		} else if (*s == '_') {
+			val += mul * 37;
+		} else if (*s == '%') {
+			val += mul * 38;
+		} else if (*s == '#') {
+			val += mul * 39;
+		}
+		mul /= 40;
+		s++;
+	}
+
+	return val;
+}
+
+// -----------------------------------------------------------------------
 int lex_int(char *str, int offset, int base, int *val)
 {
 	*val = strtol(str+offset, NULL, base);

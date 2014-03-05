@@ -126,7 +126,17 @@ name	[a-zA-Z][a-zA-Z0-9_]*
  /* ---- CHARS ----------------------------------------------------------- */
 
 '.' {
-	yylval.v = *(yytext+1);
+	yylval.v = yytext[1];
+	return INT;
+}
+
+'..' {
+	yylval.v = (yytext[1] << 8) + yytext[2];
+	return INT;
+}
+
+'[a-zA-Z0-9\ _%#]{3,3}' {
+	yylval.v = str2r40(yytext+1);
 	return INT;
 }
 
