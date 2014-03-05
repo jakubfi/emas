@@ -4,6 +4,7 @@ BUGS:
 TODO:
 
 * r40 strings?
+* .global name, name, ...
 * simplify +/- expressions for relocation
 * preprocessor
   * .macro
