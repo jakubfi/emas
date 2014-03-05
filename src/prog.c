@@ -437,10 +437,7 @@ int eval_string(struct st *t)
 
 	if (t->type == N_ASCIIZ) left++;
 
-	if (!t->data) {
-		t->data = malloc((left+1)/2);
-	}
-
+	t->data = malloc(left+1);
 	t->size = 0;
 
 	// append each double-character as value

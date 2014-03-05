@@ -194,6 +194,7 @@ pragma:
 	P_CPU NAME {
 		$$ = NULL;
 		int res = prog_cpu($2, 0);
+		free($2);
 		if (res > 0) {
 			yyerror("Unknown CPU type '%s'.", $2);
 			YYABORT;
@@ -202,20 +203,20 @@ pragma:
 			YYABORT;
 		}
 	}
-	| P_EQU NAME expr { $$ = st_str(N_EQU, $2); st_arg_app($$, $3); }
-	| P_CONST NAME expr { $$ = st_str(N_CONST, $2); st_arg_app($$, $3); }
+	| P_EQU NAME expr { $$ = st_str(N_EQU, $2); st_arg_app($$, $3); free($2); }
+	| P_CONST NAME expr { $$ = st_str(N_CONST, $2); st_arg_app($$, $3); free($2); }
 	| P_LBYTE exprs { $$ = compose_list(N_LBYTE, $2); }
 	| P_RBYTE exprs { $$ = compose_list(N_RBYTE, $2); }
 	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
 	| P_DWORD exprs { $$ = compose_list(N_DWORD, $2); }
 	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
-	| P_ASCII STRING { $$ = st_str(N_ASCII, $2); }
-	| P_ASCIIZ STRING { $$ = st_str(N_ASCIIZ, $2); }
+	| P_ASCII STRING { $$ = st_str(N_ASCII, $2); free($2); }
+	| P_ASCIIZ STRING { $$ = st_str(N_ASCIIZ, $2); free($2); }
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
 	| P_ENTRY expr { $$ = st_arg(N_ENTRY, $2, NULL); }
-	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); }
+	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); free($2); }
 	;
 
 /* ---- EXPR ------------------------------------------------------------- */
