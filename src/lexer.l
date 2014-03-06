@@ -54,7 +54,7 @@ float	[0-9]+(\.[0-9]+)?([eE]-?[0-9]+)?
 flags	\?[a-zA-Z0-9]+
 
 reg		(?i:r)[0-9]+
-pragma	\.[a-zA-Z]+
+pragma	\.[a-zA-Z0-9]+
 name	[a-zA-Z][a-zA-Z0-9_]*
 
 %%
@@ -135,9 +135,16 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 	return INT;
 }
 
-'[a-zA-Z0-9\ _%#]{3,3}' {
-	yylval.v = str2r40(yytext+1);
-	return INT;
+'...' {
+	int v = str2r40(yytext+1);
+	if (v < 0) {
+		loc_stack[loc_pos].ocol += -v;
+		llerror("Character invalid for R40 encoding");
+		return INVALID_STRING;
+	} else {
+		yylval.v = v;
+		return INT;
+	}
 }
 
  /* ---- FLAGS ----------------------------------------------------------- */

@@ -94,6 +94,7 @@ typedef struct YYLTYPE {
 %token P_FLOAT ".float"
 %token P_ASCII ".ascii"
 %token P_ASCIIZ ".asciiz"
+%token P_R40 ".r40"
 %token P_RES ".res"
 %token P_ORG ".org"
 %token P_ENTRY ".entry"
@@ -212,6 +213,7 @@ pragma:
 	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
 	| P_ASCII STRING { $$ = st_str(N_ASCII, $2); free($2); }
 	| P_ASCIIZ STRING { $$ = st_str(N_ASCIIZ, $2); free($2); }
+	| P_R40 STRING { $$ = st_str(N_R40, $2); free($2); }
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }

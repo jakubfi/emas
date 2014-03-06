@@ -94,7 +94,7 @@ int str2r40(char *str)
 	int mul = 1600;
 	char *s = str;
 
-	while (*s) {
+	while (*s && (mul >= 1)) {
 		if ((*s >= 'A') && (*s <= 'Z')) {
 			val += mul * (*s - 64);
 		} else if ((*s >= 'a') && (*s <= 'z')) {
@@ -109,6 +109,8 @@ int str2r40(char *str)
 			val += mul * 38;
 		} else if (*s == '#') {
 			val += mul * 39;
+		} else {
+			return -(s-str+1);
 		}
 		mul /= 40;
 		s++;

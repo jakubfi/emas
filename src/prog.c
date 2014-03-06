@@ -27,6 +27,7 @@
 #include "dh.h"
 #include "st.h"
 #include "prog.h"
+#include "lexer_utils.h"
 
 struct dh_table *sym;
 struct st *program;
@@ -67,6 +68,7 @@ struct eval_t eval_tab[] = {
 	{ ".org",	eval_org },
 	{ ".ascii",	eval_string },
 	{ ".asciiz",eval_string },
+	{ ".r40",	eval_r40},
 	{ ".entry",	eval_entry },
 	{ ".global",eval_global },
 	{ "LABEL",	eval_label },
@@ -432,16 +434,19 @@ int eval_org(struct st *t)
 int eval_string(struct st *t)
 {
 	char *s = t->str;
-	int left = strlen(s);
+	int chars, words;
 	int pos = 1; // start with left byte
 
-	if (t->type == N_ASCIIZ) left++;
+	chars = strlen(s);
+	if (t->type == N_ASCIIZ) chars++;
+	words = (chars+1) / 2;
 
-	t->data = malloc(left+1);
+	t->data = malloc(words * sizeof(uint16_t));
 	t->size = 0;
+	t->type = N_BLOB;
 
 	// append each double-character as value
-	while (s && (left > 0)) {
+	while (chars > 0) {
 		if (pos == 1) {
 			t->data[t->size] = (*s) << 8;
 		} else {
@@ -450,15 +455,34 @@ int eval_string(struct st *t)
 
 		pos *= -1;
 		s++;
-		left--;
+		chars--;
 
 		// flush
-		if ((pos == 1) || (left <= 0)) {
+		if ((pos == 1) || (chars <= 0)) {
 			t->size++;
 		}
 	}
 
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_r40(struct st *t)
+{
+	char *s = t->str;
+	int chars = strlen(s);
+	int words = (chars+2) / 3;
+
+	t->data = malloc(words * sizeof(uint16_t));
+	t->size = 0;
 	t->type = N_BLOB;
+
+	while (words > 0) {
+		t->data[t->size] = str2r40(s);
+		t->size++;
+		words--;
+		s += 3;
+	}
 
 	return 0;
 }

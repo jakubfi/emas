@@ -48,6 +48,7 @@ int kw_init()
 	PRAGMA_ADD(".float", P_FLOAT);
 	PRAGMA_ADD(".ascii", P_ASCII);
 	PRAGMA_ADD(".asciiz", P_ASCIIZ);
+	PRAGMA_ADD(".r40", P_R40);
 	PRAGMA_ADD(".res", P_RES);
 	PRAGMA_ADD(".org", P_ORG);
 	PRAGMA_ADD(".entry", P_ENTRY);
