@@ -260,7 +260,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 
 	AADEBUG("==== EMELF writer ================================");
 
-	e = emelf_create(EMELF_RELOC, (cpu == CPU_MX16) ? EMELF_CPU_MX16 : EMELF_CPU_MERA400);
+	e = emelf_create(EMELF_RELOC, (cpu == CPU_MX16) ? EMELF_CPU_MX16 : EMELF_CPU_MERA400, EMELF_ABI_V1);
 	if (!e) {
 		aaerror(NULL, "Error creating EMELF structure");
 		goto cleanup;
