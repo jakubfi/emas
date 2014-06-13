@@ -181,12 +181,12 @@ norm:
 	;
 
 normval:
-	REG { $$ = st_int(N_NORM, $1); }
-	| expr { $$ = st_int(N_NORM, 0); st_arg_app($$, $1); }
-	| REG '+' REG { $$ = st_int(N_NORM, $1|($3<<3)); }
-	| REG '+' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, $3); }
-	| expr '+' REG { $$ = st_int(N_NORM, $3<<3); st_arg_app($$, $1); }
-	| REG '-' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, st_arg(N_UMINUS, $3, NULL)); }
+	REG { $$ = st_int(N_NORM, $1); } // rC
+	| expr { $$ = st_int(N_NORM, 0); st_arg_app($$, $1); } // val
+	| REG '+' REG { $$ = st_int(N_NORM, $1|($3<<3)); } // rC + rB
+	| REG '+' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, $3); } // rB + val
+	| expr '+' REG { $$ = st_int(N_NORM, $3<<3); st_arg_app($$, $1); } // val + rB
+	| REG '-' expr { $$ = st_int(N_NORM, $1<<3); st_arg_app($$, st_arg(N_UMINUS, $3, NULL)); } // rB + (-val)
 	;
 
 /* ---- PRAGMA ----------------------------------------------------------- */
