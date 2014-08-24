@@ -52,9 +52,6 @@ syn keyword emasOpcode			CRON SINT SIND
 
 " directives
 syn match emasDirective			"\.cpu\>"
-syn match emasDirective			"\.file\>"
-syn match emasDirective			"\.line\>"
-syn match emasDirective			"\.include\>"
 syn match emasDirective			"\.equ\>"
 syn match emasDirective			"\.const\>"
 syn match emasDirective			"\.lbyte\>"
@@ -69,6 +66,11 @@ syn match emasDirective			"\.res\>"
 syn match emasDirective			"\.org\>"
 syn match emasDirective			"\.entry\>"
 syn match emasDirective			"\.global\>"
+
+" preprocessor
+syn match emasPreproc			"\.include\>"
+syn match emasPreproc			"\.file\>"
+syn match emasPreproc			"\.line\>"
 
 " strings
 syn region emasString			start=+'+ end=+'+ oneline
@@ -98,9 +100,10 @@ if version >= 508 || !exists("did_emas_syntax_inits")
 	HiLink emasFlags		Number
 
 	HiLink emasIdentifier	Identifier
-	HiLink emasLabel		PreProc
+	HiLink emasLabel		Type
 	HiLink emasOpcode		Statement
 	HiLink emasDirective	Statement
+	HiLink emasPreproc		PreProc
 
 	HiLink emasString		String
 
