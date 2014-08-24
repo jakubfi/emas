@@ -50,17 +50,81 @@ void llerror(char *s, ...)
 
 
 // -----------------------------------------------------------------------
-int esc2char(char c)
+int unesc_char(char *c, int *esclen)
 {
-	switch (c) {
-		case 'n': return '\n';
-		case 't': return '\t';
-		case 'r': return '\r';
-		case 'f': return '\f';
-		case '\\':return '\\';
-		case '"': return '\"';
-		default:  return -1;
+	int ret;
+	int el;
+	char buf[4];
+
+	if (*c != '\\')  {
+		el = 1;
+		ret = *c;
+	} else {
+		switch (c[1]) {
+			case 'a': // alert (bell)
+				el = 2;
+				ret = '\a';
+				break;
+			case 'b': // backspace
+				el = 2;
+				ret = '\b';
+				break;
+			case 'f': // form feed
+				el = 2;
+				ret = '\f';
+				break;
+			case 'n': // new line
+				el = 2;
+				ret = '\n';
+				break;
+			case 'r': // carriage return
+				el = 2;
+				ret = '\r';
+				break;
+			case 't': // tab
+				el = 2;
+				ret = '\t';
+				break;
+			case 'v': // vertical tab
+				el = 2;
+				ret = '\v';
+				break;
+			case '\\': // literal backslash
+				el = 2;
+				ret = '\\';
+				break;
+			case '"': // literal double quote
+				el = 2;
+				ret = '\"';
+				break;
+			case '\'': // literal single quote
+				el = 2;
+				ret = '\'';
+				break;
+			case 'x': // hex character value
+				el = 4;
+				strncpy(buf, c+2, 2);
+				buf[2] = '\0';
+				ret = strtol(buf, NULL, 16);
+				break;
+			case '0': // oct character value
+				el = 5;
+				strncpy(buf, c+2, 3);
+				buf[3] = '\0';
+				ret = strtol(buf, NULL, 8);
+				break;
+			default: // unknown escape sequence
+				el = 0;
+				ret = -1;
+				break;
+		}
 	}
+
+	if (esclen) {
+		*esclen = el;
+	}
+
+	return ret;
 }
 
 // -----------------------------------------------------------------------

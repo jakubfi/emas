@@ -42,7 +42,7 @@ nl		(\n)|(\r\n)|(\f)|(\v)
 ws		[ \t]+
 cmt		;.*$
 
-e_oct	\\0[0-3][0-7]{2,2}
+e_oct	\\0[0-7]{3,3}
 e_hex	\\x[0-9a-fA-F]{2,2}
 e_chr	\\.
 
@@ -56,6 +56,8 @@ flags	\?[a-zA-Z0-9]+
 reg		(?i:r)[0-9]+
 pragma	\.[a-zA-Z0-9]+
 name	[a-zA-Z][a-zA-Z0-9_]*
+
+achar	[^\a\b\f\n\r\t\v\\\'\"]
 
 %%
 
@@ -83,24 +85,14 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 	return STRING;
 }
 
-<str>{e_oct} {
-	if (!str_append(strtol(yytext+2, NULL, 8))) {
-		yy_pop_state();
-		return INVALID_STRING;
-	}
-}
-
-<str>{e_hex} {
-	if (!str_append(strtol(yytext+2, NULL, 16))) {
-		yy_pop_state();
-		return INVALID_STRING;
-	}
-}
-
-<str>{e_chr} {
-	int c = esc2char(*(yytext+1));
+<str>{e_chr}|{e_hex}|{e_oct} {
+	int c = unesc_char(yytext, NULL);
 	if (c < 0) {
 		llerror("Invalid escape sequence: \"%s\"", yytext);
+		yy_pop_state();
+		return INVALID_STRING;
+	} else if (c > 255) {
+		llerror("Invalid escape sequence (value too big): \"%s\"", yytext);
 		yy_pop_state();
 		return INVALID_STRING;
 	}
@@ -125,13 +117,36 @@ name	[a-zA-Z][a-zA-Z0-9_]*
 
  /* ---- CHARS ----------------------------------------------------------- */
 
-'.' {
-	yylval.v = yytext[1];
+'({achar}|{e_chr}|{e_hex}|{e_oct})' {
+	int c = unesc_char(yytext+1, NULL);
+	if (c < 0) {
+		llerror("Invalid escape sequence: \"%s\"", yytext);
+		return INVALID_STRING;
+	} else if (c > 255) {
+		llerror("Invalid escape sequence (value too big): \"%s\"", yytext);
+		return INVALID_STRING;
+	} else {
+		yylval.v = c;
+	}
 	return INT;
 }
 
-'..' {
-	yylval.v = (yytext[1] << 8) + yytext[2];
+'({achar}|{e_chr}|{e_hex}|{e_oct}){2}' {
+	int c;
+	int esclen = 0;
+	yylval.v = 0;
+	for (int mul=256 ; mul>0 ; mul-=255) {
+		c = unesc_char(yytext+1+esclen, &esclen);
+		if (c < 0) {
+			llerror("Invalid escape sequence: \"%s\"", yytext);
+			return INVALID_STRING;
+		} else if (c > 255) {
+			llerror("Invalid escape sequence (value too big): \"%s\"", yytext);
+			return INVALID_STRING;
+		} else {
+			yylval.v += c * mul;
+		}
+	}
 	return INT;
 }
 
