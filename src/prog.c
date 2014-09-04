@@ -391,6 +391,11 @@ int eval_res(struct st *t)
 		return -1;
 	}
 
+	if (t->args->val < 0) {
+		aaerror(t, "Cannot reserve %i words", t->args->val);
+		return -1;
+	}
+
 	t->size = t->args->val;
 
 	// then, check if user specified a value to fill with
