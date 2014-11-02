@@ -690,11 +690,18 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if (rel_op && t->relative) {
-		t->val -= ic+1;
+		int diff = t->val - (ic+1);
+		if (diff >= 65535 - 63) {
+			t->val = diff - 65536;
+		} else if (diff <= -65535 + 63) {
+			t->val = diff + 65536;
+		} else {
+			t->val = diff;
+		}
 	}
 
 	if ((t->val < min) || (t->val > max)) {
-		aaerror(t, "Argument value %i for %s out of range (%i..%i)", t->val, eval_tab[t->type].name, min, max);
+		aaerror(t, "Argument value %i for %s is out of range (%i..%i)", t->val, eval_tab[t->type].name, min, max);
 		return -1;
 	}
 
