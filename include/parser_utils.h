@@ -18,7 +18,7 @@
 #ifndef PARSER_UTILS_H
 #define PARSER_UTILS_H
 
-void yyerror(char *s, ...);
+void yyerror(const char *s, ...);
 struct st * compose_norm(int type, int opcode, int reg, struct st *norm);
 struct st * compose_list(int type, struct st *list);
 

@@ -27,7 +27,7 @@
 extern int lexer_err_reported;
 
 // -----------------------------------------------------------------------
-void yyerror(char *s, ...)
+void yyerror(const char *s, ...)
 {
 	if (lexer_err_reported) return;
 	va_list ap;

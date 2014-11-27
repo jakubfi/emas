@@ -29,8 +29,6 @@ int yylex(void);
 
 %code requires {
 
-void yyerror(char *s, ...);
-
 typedef struct YYLTYPE {
   int first_line;
   int first_column;

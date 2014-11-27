@@ -216,9 +216,15 @@ int dh_sanity_check(struct dh_table *dh)
 				lcname = strdup(elem->name);
 				ucname = strdup(elem->name);
 				c = lcname;
-				while (c && *c) *c++ = tolower(*c);
+				while (c && *c) {
+					*c = tolower(*c);
+					c++;
+				}
 				c = ucname;
-				while (c && *c) *c++ = toupper(*c);
+				while (c && *c) {
+					*c = toupper(*c);
+					c++;
+				}
 				if (!dh_get(dh, ucname)) {
 					ret--;
 					printf("Could not find (uower case): %s\n", ucname);
