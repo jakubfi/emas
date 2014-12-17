@@ -1,0 +1,5 @@
+build/
+*.asm
+*.swp
+a.out
+*.o

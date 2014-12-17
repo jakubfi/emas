@@ -3,20 +3,22 @@ FLEX_TARGET(lexer lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.c)
 ADD_FLEX_BISON_DEPENDENCY(lexer parser)
 
 ADD_EXECUTABLE(emas
-emas.c
-${BISON_parser_OUTPUTS}
-${FLEX_lexer_OUTPUTS}
-lexer_utils.c
-parser_utils.c
-prog.c
-dh.c
-st.c
-keywords.c
-writers.c
+	emas.c
+	${BISON_parser_OUTPUTS}
+	${FLEX_lexer_OUTPUTS}
+	lexer_utils.c
+	parser_utils.c
+	prog.c
+	dh.c
+	st.c
+	keywords.c
+	writers.c
 )
 
-TARGET_LINK_LIBRARIES(emas emelf)
+TARGET_LINK_LIBRARIES(emas ${EMELF_LIBRARIES})
 
-install(TARGETS emas RUNTIME DESTINATION bin)
+install(TARGETS emas
+	RUNTIME DESTINATION bin
+)
 
 # vim: tabstop=4
