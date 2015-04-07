@@ -68,14 +68,17 @@ syn match emasDirective			"\.entry\>"
 syn match emasDirective			"\.global\>"
 
 " preprocessor
-syn match emasPreproc			"\.include\>"
-syn match emasPreproc			"\.file\>"
+syn match emasPreproc			"\.include\>" contained
+syn match emasPreproc			"\.file\>" contained
 syn match emasPreproc			"\.line\>"
 
 " strings
 syn region emasString			start=+'+ end=+'+ oneline
 syn region emasString			start=+"+ end=+"+ oneline
 
+" file names
+syn region emasFileName start='.include' end='$' oneline contains=emasPreproc
+syn region emasFileName start='.file' end='$' oneline contains=emasPreproc
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -106,6 +109,8 @@ if version >= 508 || !exists("did_emas_syntax_inits")
 	HiLink emasPreproc		PreProc
 
 	HiLink emasString		String
+
+	HiLink emasFileName		String
 
   syntax sync minlines=50
 
