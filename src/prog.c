@@ -320,11 +320,25 @@ int eval_word(struct st *t)
 
 	switch (t->type) {
 		case N_WORD:
+			if ((t->args->val < -32768) || (t->args->val > 65535)) {
+				aaerror(t, "Value %i is not an 16-bit signed/unsigned integer", t->args->val);
+				return -1;
+			}
+			t->val = t->args->val;
+			break;
 		case N_RBYTE:
+			if ((t->args->val < 0) || (t->args->val > 255)) {
+				aaerror(t, "Value %i is not an 8-bit unsigned integer", t->args->val);
+				return -1;
+			}
 			t->val = t->args->val;
 			break;
 		case N_LBYTE:
-			t->val <<= 8;
+			if ((t->args->val < 0) || (t->args->val > 255)) {
+				aaerror(t, "Value %i is not an 8-bit unsigned integer", t->args->val);
+				return -1;
+			}
+			t->val = t->args->val << 8;
 			break;
 	}
 
