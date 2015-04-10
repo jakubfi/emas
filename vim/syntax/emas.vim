@@ -49,6 +49,7 @@ syn keyword emasOpcode			LD LF LA LL TD TF TA TL
 syn keyword emasOpcode			RD RF RA RL PD PF PA PL
 syn keyword emasOpcode			MB IM KI FI SP MD RZ IB
 syn keyword emasOpcode			CRON SINT SIND
+syn keyword emasOpcode			NOP
 
 " directives
 syn match emasDirective			"\.cpu\>"
