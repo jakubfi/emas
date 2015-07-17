@@ -24,6 +24,8 @@
 #include <math.h>
 #include <inttypes.h>
 
+#include <emawp.h>
+
 #include "dh.h"
 #include "st.h"
 #include "prog.h"
@@ -259,11 +261,6 @@ int eval_2arg(struct st *t)
 	return 0;
 }
 
-#define FP_BITS 64
-#define FP_BIT(n, z) ((z) & (1ULL << (FP_BITS-1-n)))
-#define FP_M_MAX 0b0111111111111111111111111111111111111111000000000000000000000000
-#define FP_CORRECTION (1ULL << (FP_BITS-1-39))
-
 // -----------------------------------------------------------------------
 int eval_float(struct st *t)
 {
@@ -271,37 +268,19 @@ int eval_float(struct st *t)
 		t->data = malloc(3 * sizeof(uint16_t));
 	}
 
-	int exp;
-	double m = frexp(t->flo, &exp);
-	int64_t m_int = ldexp(m, FP_BITS-1);
+	uint16_t flags;
 
-	if ((m_int != 0) && ((FP_BIT(0, m_int) >> 1) == FP_BIT(1, m_int))) {
-		m_int <<= 1;
-		exp--;
-	}
+	int res = awp_from_double(t->data+0, t->data+1, t->data+2, &flags, t->flo, 0);
 
-	if (FP_BIT(40, m_int)) {
-		if ((m_int & FP_M_MAX) == FP_M_MAX) {
-			m_int >>= 1;
-			exp++;
-			m_int += FP_CORRECTION >> 1;
-		} else {
-			m_int += FP_CORRECTION;
-		}
-	}
 	// check for overflow/underflow
-	if (exp > 127) {
-		aaerror(t, "Floating point overflow");
-		return -1;
-	} else if (((m != 0.0f) && exp < -128)) {
-		aaerror(t, "Floating point underflow");
-		return -1;
+	switch (res) {
+		case AWP_FP_OF:
+			aaerror(t, "Floating point overflow");
+			return -1;
+		case AWP_FP_UF:
+			aaerror(t, "Floating point underflow");
+			return -1;
 	}
-
-	t->data[0] = m_int >> 48;
-	t->data[1] = m_int >> 32;
-	t->data[2] = (m_int >> 16) & 0b1111111100000000;
-	t->data[2] |= exp & 255;
 
 	return 0;
 }
