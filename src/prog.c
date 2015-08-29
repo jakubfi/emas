@@ -671,7 +671,7 @@ int eval_as_short(struct st *t, int type, int op)
 			rel_op = ((opl == 0b010) || (opl == 0b011) || (opl == 0b110) || (opl == 0b111)) ? 1 : 0;
 			break;
 		case N_OP_HLT:
-			min = -63; max = 63;
+			min = 0; max = 127;
 			break;
 		case N_OP_BRC:
 		case N_OP_EXL:
@@ -720,11 +720,14 @@ int eval_op_short(struct st *t)
 			break;
 		case N_OP_T:
 		case N_OP_RT:
-		case N_OP_HLT:
 			if (arg->val < 0) {
 				arg->val = -arg->val;
 				arg->val |= 0b0000001000000000;
 			}
+			break;
+		case N_OP_HLT:
+			arg->val |= (arg->val & 0b0000000001000000) << 3;
+			arg->val &= 0b1111111110111111;
 			break;
 		case N_OP_BLC:
 			if (arg->val & 255) {
