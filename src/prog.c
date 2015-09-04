@@ -446,9 +446,9 @@ int eval_string(struct st *t)
 	// append each double-character as value
 	while (chars > 0) {
 		if (pos == 1) {
-			t->data[t->size] = (*s) << 8;
+			t->data[t->size] = *s << 8;
 		} else {
-			t->data[t->size] += *s;
+			t->data[t->size] |= *s & 0xff;
 		}
 
 		pos *= -1;
