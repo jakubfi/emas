@@ -15,6 +15,7 @@ ADD_EXECUTABLE(emas
 	writers.c
 )
 
+include_directories(${EMELF_INCLUDE_DIRS} ${EMAWP_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(emas ${EMELF_LIBRARIES} ${EMAWP_LIBRARIES})
 
 install(TARGETS emas
