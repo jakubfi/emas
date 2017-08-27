@@ -184,8 +184,23 @@ int str2r40(char *str)
 }
 
 // -----------------------------------------------------------------------
+void delchar(char *str, char c)
+{
+	char *r = str;
+	char *w = str;
+
+	while (*r) {
+		*w = *r;
+		if (*w != c) w++;
+		r++;
+	}
+	*w = '\0';
+}
+
+// -----------------------------------------------------------------------
 int lex_int(char *str, int offset, int base, int *val)
 {
+	delchar(str+offset, '_');
 	*val = strtol(str+offset, NULL, base);
 	return INT;
 }
