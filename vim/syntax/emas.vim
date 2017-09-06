@@ -25,10 +25,10 @@ syn match emasComment			";.*"
 syn keyword emasRegister		r0 r1 r2 r3 r4 r5 r6 r7
 
 " numbers
-syn match emasDecimal			"[-+]\?[0-9]\+"
-syn match emasBinary			"0b[0-1]\+"
-syn match emasOctal				"0[0-7]\+"
-syn match emasHexadecimal		"0x[0-9a-fA-F]\+"
+syn match emasDecimal			"[-+]\?[0-9_]\+"
+syn match emasBinary			"0b[0-1_]\+"
+syn match emasOctal				"0[0-7_]\+"
+syn match emasHexadecimal		"0x[0-9a-fA-F_]\+"
 syn match emasFloat				"[-+]\?\d\+\.\(\d*\(E[-+]\?\d\+\)\?\)\?"
 syn match emasFlags				"?[ZMCVLEGXY]\+"
 
