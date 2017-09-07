@@ -55,7 +55,7 @@ flags	\?[a-zA-Z0-9]+
 
 reg		(?i:r)[0-9]+
 pragma	\.[a-zA-Z0-9]+
-name	[a-zA-Z][a-zA-Z0-9_]*
+name	[a-zA-Z_][a-zA-Z0-9_]*
 
 achar	[^\a\b\f\n\r\t\v\\\'\"]
 
