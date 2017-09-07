@@ -67,6 +67,10 @@ syn match emasDirective			"\.res\>"
 syn match emasDirective			"\.org\>"
 syn match emasDirective			"\.entry\>"
 syn match emasDirective			"\.global\>"
+syn match emasDirective			"\.ifdef\>"
+syn match emasDirective			"\.ifndef\>"
+syn match emasDirective			"\.else\>"
+syn match emasDirective			"\.endif\>"
 
 " preprocessor
 syn match emasPreproc			"\.include\>" contained

@@ -280,7 +280,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 				break;
 			default:
 				if (try_reloc(t, e)) {
-					aaerror(t, "Unable to relocate");
+					aaerror(t, "Unable to relocate (node type: %s)", eval_tab[t->type].name);
 					goto cleanup;
 				}
 				break;
@@ -325,6 +325,5 @@ cleanup:
 
 	return ret;
 }
-
 
 // vim: tabstop=4 autoindent

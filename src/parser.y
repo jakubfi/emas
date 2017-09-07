@@ -97,6 +97,10 @@ typedef struct YYLTYPE {
 %token P_ORG ".org"
 %token P_ENTRY ".entry"
 %token P_GLOBAL ".global"
+%token P_IFDEF ".ifdef"
+%token P_IFNDEF ".ifndef"
+%token P_ELSE ".else"
+%token P_ENDIF ".endif"
 
 %token <v> OP_RN "reg-norm-arg op"
 %token <v> OP_N "norm-arg op"
@@ -217,6 +221,10 @@ pragma:
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
 	| P_ENTRY expr { $$ = st_arg(N_ENTRY, $2, NULL); }
 	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); free($2); }
+	| P_IFDEF NAME lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $3); st_arg_app($$, st_int(N_PROG, 0)); free($2); }
+	| P_IFDEF NAME lines P_ELSE lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $3); st_arg_app($$, $5); free($2); }
+	| P_IFNDEF NAME lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, st_int(N_PROG, 0)); st_arg_app($$, $3); free($2); }
+	| P_IFNDEF NAME lines P_ELSE lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $5); st_arg_app($$, $3); free($2); }
 	;
 
 /* ---- EXPR ------------------------------------------------------------- */

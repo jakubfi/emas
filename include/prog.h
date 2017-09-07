@@ -78,6 +78,7 @@ enum node_types {
 	N_R40,
 	N_ENTRY,
 	N_GLOBAL,
+	N_IFDEF,
 	N_LABEL,
 	N_EQU,
 	N_CONST,
@@ -127,6 +128,7 @@ int eval_equ(struct st *t);
 int eval_const(struct st *t);
 int eval_entry(struct st *t);
 int eval_global(struct st *t);
+int eval_ifdef(struct st *t);
 int eval_name(struct st *t);
 int eval_curloc(struct st *t);
 int eval_as_short(struct st *t, int type, int op);

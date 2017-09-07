@@ -73,6 +73,7 @@ struct eval_t eval_tab[] = {
 	{ ".r40",	eval_r40},
 	{ ".entry",	eval_entry },
 	{ ".global",eval_global },
+	{ ".ifdef",	eval_ifdef },
 	{ "LABEL",	eval_label },
 	{ ".equ",	eval_equ },
 	{ ".const",	eval_const },
@@ -602,6 +603,38 @@ int eval_global(struct st *t)
 		dh_addv(sym, t->str, SYM_UNDEFINED | SYM_GLOBAL, 0);
 	}
 
+	t->type = N_NONE;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_ifdef(struct st *t)
+{
+	struct st *prog;
+	struct dh_elem *s = dh_get(sym, t->str);
+
+	if (s && !(s->type & SYM_UNDEFINED)) {
+		// first argument holds the program block for 'symbol defined' case
+		prog = t->args;
+	} else {
+		// second argument holds the program block for 'symbol undefined' case
+		prog = t->args->next;
+	}
+
+	assert(prog);
+
+	// if there is any code in this program  block
+	if (prog->args)  {
+		// link the code that follows .endif after the last instruction in the block
+		prog->last->next = t->next;
+		// link the conditional code just after this node
+		t->next = prog->args;
+		// unlink the injected code from the conditional block (no double-frees)
+		prog->args = NULL;
+	}
+
+	// ignore the node from now on
 	t->type = N_NONE;
 
 	return 0;
