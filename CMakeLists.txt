@@ -1,6 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.4)
 PROJECT(emas C)
 
+include(GNUInstallDirs)
 include(appversion.cmake)
 
 find_package(BISON REQUIRED)
