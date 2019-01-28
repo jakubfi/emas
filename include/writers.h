@@ -23,6 +23,7 @@
 int writer_debug(struct st *prog, FILE *f);
 int writer_raw(struct st *prog, FILE *f);
 int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f);
+int writer_keys(struct st *prog, FILE *f);
 
 #endif
 

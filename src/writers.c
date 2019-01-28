@@ -96,6 +96,38 @@ int writer_debug(struct st *prog, FILE *f)
 }
 
 // -----------------------------------------------------------------------
+int writer_keys(struct st *prog, FILE *f)
+{
+	struct st *t = prog->args;
+	char *bin;
+
+	AADEBUG("==== KEYS writer ================================");
+	fprintf(f, "addr: oct      bin\n");
+	fprintf(f, "-----------------------------------\n");
+	while (t) {
+		switch (t->type) {
+			case N_INT:
+				bin = int2binf(".... .... .... ....", t->val, 16);
+				fprintf(f, "%4i: %06o   %s\n", t->ic, (uint16_t) t->val, bin);
+				free(bin);
+				break;
+			case N_BLOB:
+				for (int i=0 ; i<t->size ; i++) {
+					char *bin = int2binf(".... .... .... ....", t->data[i], 16);
+					fprintf(f, "%4i: %06o   %s\n", t->ic+i, (uint16_t) t->data[i], bin);
+					free(bin);
+				}
+				break;
+			default:
+				//fprintf(f, "@ 0x%04x : unresolved\n", t->ic);
+				break;
+		}
+		t = t->next;
+	}
+	return 0;
+}
+
+// -----------------------------------------------------------------------
 static void img_put(struct st *t)
 {
 	switch (t->type) {

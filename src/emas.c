@@ -30,6 +30,7 @@ enum output_types {
 	O_DEBUG	= 1,
 	O_RAW	= 2,
 	O_EMELF	= 3,
+	O_KEYS	= 4,
 };
 
 int yyparse();
@@ -47,7 +48,7 @@ void usage()
 	printf("Where options are one or more of:\n");
 	printf("   -o <output> : set output file (a.out otherwise)\n");
 	printf("   -c <cpu>    : set CPU type: mera400, mx16\n");
-	printf("   -O <otype>  : set output type: raw, debug, emelf (defaults to emelf)\n");
+	printf("   -O <otype>  : set output type: raw, debug, emelf, keys (defaults to emelf)\n");
 	printf("   -I <dir>    : search for include files in <dir>\n");
 	printf("   -d          : print debug information to stderr (lots of)\n");
 	printf("   -v          : print version and exit\n");
@@ -76,6 +77,8 @@ int parse_args(int argc, char **argv)
 					otype = O_DEBUG;
 				} else if (!strcmp(optarg, "emelf")) {
 					otype = O_EMELF;
+				} else if (!strcmp(optarg, "keys")) {
+					otype = O_KEYS;
 				} else {
 					printf("Unknown output type: '%s'.\n", optarg);
 					return -1;
@@ -185,7 +188,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (otype != O_DEBUG) {
+	if ((otype != O_DEBUG) && (otype != O_KEYS)) {
 		if (!output_file) {
 			output_file = strdup("a.out");
 		}
@@ -193,9 +196,12 @@ int main(int argc, char **argv)
 	} else {
 		if (!output_file) {
 			output_file = strdup("(stdout)");
+			outf = stdout;
+		} else {
+			outf = fopen(output_file, "w");
 		}
-		outf = stdout;
 	}
+
 	if (!outf) {
 		printf("Cannot open output file '%s' for writing\n", output_file);
 		goto cleanup;
@@ -210,6 +216,9 @@ int main(int argc, char **argv)
 			break;
 		case O_EMELF:
 			res = writer_emelf(program, sym, outf);
+			break;
+		case O_KEYS:
+			res = writer_keys(program, outf);
 			break;
 		default:
 			printf("Unknown output type.\n");
