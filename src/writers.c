@@ -96,26 +96,42 @@ int writer_debug(struct st *prog, FILE *f)
 }
 
 // -----------------------------------------------------------------------
+static void keys_print(FILE *f, uint16_t addr, uint16_t data)
+{
+	char *bin;
+	bin = int2binf(".... .... .... ....", data, 16);
+	fprintf(f, "%4i: %06o   %s   ", addr, data, bin);
+	free(bin);
+	int first = 1;
+	for (int i=0; i<16 ; i++) {
+		if ((data & (1<<(15-i)))) {
+			if (!first) {
+				fprintf(f, ", %i", i);
+			} else {
+				fprintf(f, "%i", i);
+			}
+			first = 0;
+		}
+	}
+	fprintf(f, "\n");
+}
+
+// -----------------------------------------------------------------------
 int writer_keys(struct st *prog, FILE *f)
 {
 	struct st *t = prog->args;
-	char *bin;
 
 	AADEBUG("==== KEYS writer ================================");
-	fprintf(f, "addr: oct      bin\n");
-	fprintf(f, "-----------------------------------\n");
+	fprintf(f, "addr: oct      bin                   keys\n");
+	fprintf(f, "-------------------------------------------------------------------\n");
 	while (t) {
 		switch (t->type) {
 			case N_INT:
-				bin = int2binf(".... .... .... ....", t->val, 16);
-				fprintf(f, "%4i: %06o   %s\n", t->ic, (uint16_t) t->val, bin);
-				free(bin);
+				keys_print(f, t->ic, t->val);
 				break;
 			case N_BLOB:
 				for (int i=0 ; i<t->size ; i++) {
-					char *bin = int2binf(".... .... .... ....", t->data[i], 16);
-					fprintf(f, "%4i: %06o   %s\n", t->ic+i, (uint16_t) t->data[i], bin);
-					free(bin);
+					keys_print(f, t->ic+i, t->data[i]);
 				}
 				break;
 			default:
