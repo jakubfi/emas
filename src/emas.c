@@ -39,7 +39,7 @@ extern FILE *yyin;
 
 char *input_file;
 char *output_file = NULL;
-int otype = O_EMELF;
+int otype = O_RAW;
 
 // -----------------------------------------------------------------------
 void usage()
@@ -48,7 +48,7 @@ void usage()
 	printf("Where options are one or more of:\n");
 	printf("   -o <output> : set output file (a.out otherwise)\n");
 	printf("   -c <cpu>    : set CPU type: mera400, mx16\n");
-	printf("   -O <otype>  : set output type: raw, debug, emelf, keys (defaults to emelf)\n");
+	printf("   -O <otype>  : set output type: raw, debug, emelf, keys (defaults to raw)\n");
 	printf("   -I <dir>    : search for include files in <dir>\n");
 	printf("   -d          : print debug information to stderr (lots of)\n");
 	printf("   -v          : print version and exit\n");
