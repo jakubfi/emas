@@ -321,7 +321,7 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
  /* ---- EOF ------------------------------------------------------------- */
 
 <<EOF>> {
-	yy_top_state(); // just to suppress warning
+	if (yy_start_stack_ptr) yy_top_state(); // just to suppress warning
 	yypop_buffer_state();
 	loc_pop();
 	if (!YY_CURRENT_BUFFER) {
