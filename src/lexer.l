@@ -186,19 +186,19 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 
  /* ---- NUMBERS --------------------------------------------------------- */
 
-{oct}   {
+{oct} {
 	return lex_int(yytext, 1, 8, &(yylval.v));
 }
 <p_float>{dec} {
 	return lex_float(yytext, &(yylval.f));
 }
-{dec}   {
+{dec} {
 	return lex_int(yytext, 0, 10, &(yylval.v));
 }
-{bin}   {
+{bin} {
 	return lex_int(yytext, 2, 2, &(yylval.v));
 }
-{hex}   {
+{hex} {
 	return lex_int(yytext, 2, 16, &(yylval.v));
 }
 {float} {

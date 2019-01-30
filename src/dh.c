@@ -110,8 +110,8 @@ int dh_delete(struct dh_table *dh, char *name)
 	struct dh_elem *prev = NULL;
 	struct dh_elem *elem = dh->slots[hash];
 
-    while (elem) {
-        if (!(dh->str_cmp(name, elem->name))) {
+	while (elem) {
+		if (!(dh->str_cmp(name, elem->name))) {
 			if (prev) {
 				prev->next = elem->next;
 			} else {
@@ -120,11 +120,11 @@ int dh_delete(struct dh_table *dh, char *name)
 			free(elem->name);
 			st_drop(elem->t);
 			free(elem);
-            return 0;
-        }
+			return 0;
+		}
 		prev = elem;
-        elem = elem->next;
-    }
+		elem = elem->next;
+	}
 	return -1;
 }
 

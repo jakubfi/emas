@@ -56,7 +56,7 @@ int unesc_char(char *c, int *esclen)
 	int el;
 	char buf[4];
 
-	if (*c != '\\')  {
+	if (*c != '\\') {
 		el = 1;
 		ret = *c;
 	} else {

@@ -624,8 +624,8 @@ int eval_ifdef(struct st *t)
 
 	assert(prog);
 
-	// if there is any code in this program  block
-	if (prog->args)  {
+	// if there is any code in this program block
+	if (prog->args) {
 		// link the code that follows .endif after the last instruction in the block
 		prog->last->next = t->next;
 		// link the conditional code just after this node
