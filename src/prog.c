@@ -421,6 +421,10 @@ int eval_org(struct st *t)
 		return -1;
 	}
 
+	if (t->args->val < ic) {
+		aaerror(t, "Cannot move location pointer backwards by %i words", t->args->val - ic);
+		return -1;
+	}
 	ic = t->args->val;
 	t->type = N_NONE;
 	st_drop(t->args);
