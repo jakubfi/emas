@@ -22,4 +22,17 @@ install(TARGETS emas
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+install(FILES
+	${PROJECT_SOURCE_DIR}/asminc/cpu.inc
+	${PROJECT_SOURCE_DIR}/asminc/io.inc
+	${PROJECT_SOURCE_DIR}/asminc/mega.inc
+	${PROJECT_SOURCE_DIR}/asminc/mx.inc
+	${PROJECT_SOURCE_DIR}/asminc/mx_io.inc
+	${PROJECT_SOURCE_DIR}/asminc/mx_irq.inc
+	${PROJECT_SOURCE_DIR}/asminc/mx_line.inc
+	${PROJECT_SOURCE_DIR}/asminc/mx_setcfg.inc
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/emas/include
+	COMPONENT dev
+)
+
 # vim: tabstop=4

@@ -155,6 +155,7 @@ int main(int argc, char **argv)
 	}
 
 	inc_path_add(".");
+	inc_path_add("/usr/share/emas/include");
 
 	AADEBUG("==== Parse ================================");
 	if (yyparse()) {
@@ -164,7 +165,7 @@ int main(int argc, char **argv)
 
 	if (yyin) fclose(yyin);
 
-	if (!program) { // shouldn't happen - parser should always produce program (even empty one)
+	if (!program) { // shouldn't happen - parser should always produce a program (even an empty one)
 		printf("Parse produced empty tree.\n");
 		goto cleanup;
 	}
