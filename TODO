@@ -8,8 +8,6 @@ TODO:
 * preprocessor
   * .macro
   * .alias (.define?)
-  * .def
-  * .ifdef/.ifund
 
 TO CLARIFY:
 
