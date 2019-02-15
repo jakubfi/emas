@@ -164,11 +164,11 @@ int eval_1arg(struct st *t)
 	u = eval(arg);
 	if (u) return u;
 
-	if ((t->type == N_NEG) && (arg->relative)) {
+/*	if ((t->type == N_NEG) && (arg->relative)) {
 		aaerror(t, "Invalid argument type for operator '%s': (%s)", eval_tab[t->type].name, arg->relative ? "relative" : "absolute");
 		return -1;
 	}
-
+*/
 	switch (t->type) {
 		case N_UMINUS:
 			t->val = -arg->val;
@@ -204,13 +204,13 @@ int eval_2arg(struct st *t)
 
 	if (u1 || u2) return 1;
 
-	if ((t->type != N_PLUS) && (t->type != N_MINUS) && ((arg1->relative) || (arg2->relative))) {
+/*	if ((t->type != N_PLUS) && (t->type != N_MINUS) && ((arg1->relative) || (arg2->relative))) {
 		aaerror(t, "Invalid argument types for operator '%s': (%s, %s)",
 			eval_tab[t->type].name,
 			arg1->relative ? "relative" : "absolute",
 			arg2->relative ? "relative" : "absolute");
 		return -1;
-	} else if ((t->type == N_MINUS) && (arg1->relative) && (arg2->relative)) {
+	} else */if ((t->type == N_MINUS) && (arg1->relative) && (arg2->relative)) {
 		t->relative = 0;
 	} else {
 		t->relative = arg1->relative | arg2->relative;
