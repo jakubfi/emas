@@ -140,6 +140,7 @@ int eval_err(struct st *t);
 
 int eval(struct st *t);
 int assemble(struct st *prog, int keep_going);
+int add_const(char *name, int val);
 
 #endif
 

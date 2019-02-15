@@ -46,20 +46,24 @@ void usage()
 {
 	printf("Usage: emas [options] [input]\n");
 	printf("Where options are one or more of:\n");
-	printf("   -o <output> : set output file (a.out otherwise)\n");
-	printf("   -c <cpu>    : set CPU type: mera400, mx16\n");
-	printf("   -O <otype>  : set output type: raw, debug, emelf, keys (defaults to raw)\n");
-	printf("   -I <dir>    : search for include files in <dir>\n");
-	printf("   -d          : print debug information to stderr (lots of)\n");
-	printf("   -v          : print version and exit\n");
-	printf("   -h          : print help and exit\n");
+	printf("   -o <output>    : set output file (a.out otherwise)\n");
+	printf("   -c <cpu>       : set CPU type: mera400, mx16\n");
+	printf("   -O <otype>     : set output type: raw, debug, emelf, keys (defaults to raw)\n");
+	printf("   -I <dir>       : search for include files in <dir>\n");
+	printf("   -D <const>[=v] : define a constant and optionaly set its value (0 by default)\n");
+	printf("   -d             : print debug information to stderr (lots of)\n");
+	printf("   -v             : print version and exit\n");
+	printf("   -h             : print help and exit\n");
 }
 
 // -----------------------------------------------------------------------
 int parse_args(int argc, char **argv)
 {
+	char *strval;
+	int val = 0;
+
 	int option;
-	while ((option = getopt(argc, argv,"I:c:O:vhdo:")) != -1) {
+	while ((option = getopt(argc, argv,"I:D:c:O:vhdo:")) != -1) {
 		switch (option) {
 			case 'c':
 				if (prog_cpu(optarg, CPU_FORCED)) {
@@ -69,6 +73,14 @@ int parse_args(int argc, char **argv)
 				break;
 			case 'I':
 				inc_path_add(optarg);
+				break;
+			case 'D':
+				strval = strchr(optarg, '=');
+				if (strval) {
+					*strval = '\0';
+					val = atoi(strval+1);
+				}
+				add_const(optarg, val);
 				break;
 			case 'O':
 				if (!strcmp(optarg, "raw")) {
@@ -122,14 +134,6 @@ int main(int argc, char **argv)
 	int res;
 	FILE *outf;
 
-	res = parse_args(argc, argv);
-
-	if (res) {
-		printf("\n");
-		usage();
-		goto cleanup;
-	}
-
 	if (kw_init() < 0) {
 		printf("Internal dictionary initialization failed.\n");
 		goto cleanup;
@@ -138,6 +142,14 @@ int main(int argc, char **argv)
 	sym = dh_create(16000, 1);
 	if (!sym) {
 		printf("Failed to create symbol table.\n");
+		goto cleanup;
+	}
+
+	res = parse_args(argc, argv);
+
+	if (res) {
+		printf("\n");
+		usage();
 		goto cleanup;
 	}
 

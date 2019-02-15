@@ -865,4 +865,21 @@ int assemble(struct st *prog, int keep_going)
 	return uret;
 }
 
+// -----------------------------------------------------------------------
+int add_const(char *name, int val)
+{
+	struct dh_elem *s;
+
+	s = dh_get(sym, name);
+
+	if (!s) {
+		struct st *t = st_int(N_INT, val);
+		dh_addt(sym, name, SYM_CONST, t);
+	} else {
+		s->value = val;
+	}
+
+	return 0;
+}
+
 // vim: tabstop=4 autoindent
