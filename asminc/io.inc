@@ -20,24 +20,10 @@
 .ifndef __IO_INC__
 .const __IO_INC__ 1
 
-; channel numbers for I/O commands
+; channel I/O
 
-.const IO_CH0	0\14
-.const IO_CH1	1\14
-.const IO_CH2	2\14
-.const IO_CH3	3\14
-.const IO_CH4	4\14
-.const IO_CH5	5\14
-.const IO_CH6	6\14
-.const IO_CH7	7\14
-.const IO_CH8	8\14
-.const IO_CH9	9\14
-.const IO_CH10	10\14
-.const IO_CH11	11\14
-.const IO_CH12	12\14
-.const IO_CH13	13\14
-.const IO_CH14	14\14
-.const IO_CH15	15\14
+.const IO_CHAN	14	; bit position in N argument
+.const IO_DEV	10	; bit position in N argument
 
 ; general channel I/O commands
 
@@ -45,9 +31,13 @@
 .const IO_INTSPEC	0b000\2 | 0b01\4	; IN, get interrupt specification
 .const IO_EXISTS	0b000\2 | 0b10\4	; IN, check if channel exists
 
-; memory configuration bit
+; memory configuration field locations
 
-.const MEM_CFG		1\15	; command for memory module
+.const MEM_CFG		1\15	; command is for memory module
+.const MEM_PAGE		3	; page position (in r argument)
+.const MEM_SEGMENT	15	; segment position (in r argument)
+.const MEM_FRAME	10	; frame position (in N argument)
+.const MEM_MODULE	14	; module position (in N argument)
 
 .endif
 

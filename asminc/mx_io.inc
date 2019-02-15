@@ -24,7 +24,7 @@
 
 ; default MULTIX I/O channel
 
-.const MX_DEFAULT_CH	IO_CH1
+.const MX_DEFAULT_CH	1\IO_CHAN
 .const MX_DEFAULT_IV	IV_CH1
 
 ; MULTIX I/O commands

@@ -31,6 +31,13 @@
 .const INTV_SIZE	32	; there are 32 interrupts
 .const SFPV_SIZE	12	; there are 12 FP commands
 
+; SR field positions
+
+.const SR_NB		15	; bit position of NB in SR register
+.const SR_BS		11	; bit position of BS in SR register
+.const SR_Q		10	; bit position of Q in SR register
+.const SR_RM		9	; bit position of RM in SR register
+
 ; interrupt numbers
 
 .const INT_POWER	0	; power loss
@@ -80,7 +87,7 @@
 .const INTV_FP_UF	INTV + INT_FP_UF
 .const INTV_FP_OF	INTV + INT_FP_OF
 .const INTV_FP_ERR	INTV + INT_FP_ERR
-.const INTV_FP_DIV0	INTV + INT_DIV0
+.const INTV_FP_DIV0	INTV_FP_ERR
 .const INTV_UNUSED	INTV + INT_UNUSED
 .const INTV_CH0		INTV + INT_CH0
 .const INTV_CH1		INTV + INT_CH1
@@ -120,6 +127,28 @@
 .const IMASK_ALL_CH	0b0000011110000000	; all channel interrupts
 .const IMASK_ALL	0b1111111111000000	; all interrupts
 .const IMASK_NONE	0b0000000000000000	; no interrupts
+
+; 16-bit subset of interrupts accessible by instructions 'ki' and 'fi'
+
+.const	I16_POWER	0b1000000000000000
+.const	I16_PARITY	0b0100000000000000
+.const	I16_NOMEM	0b0010000000000000
+.const	I16_CPU_H	0b0001000000000000
+.const	I16_IFPOWER	0b0000100000000000
+.const	I16_TIMER	0b0000010000000000
+.const	I16_ILLEGAL	0b0000001000000000
+.const	I16_DIV_OF	0b0000000100000000
+.const	I16_FP_UF	0b0000000010000000
+.const	I16_FP_OF	0b0000000001000000
+.const	I16_FP_ERR	0b0000000000100000
+.const	I16_DIV0	I_FP_ERR
+.const	I16_EXTRA	0b0000000000010000
+.const	I16_OPRQ	0b0000000000001000
+.const	I16_CPU_L	0b0000000000000100
+.const	I16_SW_H	0b0000000000000010
+.const	I16_SW_L	0b0000000000000001
+.const	I16_ALL		0b1111111111111111
+.const	I16_NONE	0b0000000000000000
 
 ; software fp procedure vectors
 
