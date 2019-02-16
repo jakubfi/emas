@@ -38,77 +38,41 @@
 .const SR_Q		10	; bit position of Q in SR register
 .const SR_RM		9	; bit position of RM in SR register
 
-; interrupt numbers
-
-.const INT_POWER	0	; power loss
-.const INT_PARITY	1	; memory parity error
-.const INT_NOMEM	2	; no memory (segmentation fault)
-.const INT_CPU_H	3	; other CPU high interupt
-.const INT_IFPOWER	4	; interface power loss
-.const INT_TIMER	5	; timer
-.const INT_ILLEGAL	6	; illegal instruction
-.const INT_DIV_OF	7	; division overflow
-.const INT_FP_UF	8	; floating point underflow
-.const INT_FP_OF	9	; floating point overflow
-.const INT_FP_ERR	10	; floating point error...
-.const INT_DIV0		INT_FP_ERR ; ...or division by zero
-.const INT_UNUSED	11	; unused interrupt
-.const INT_CH0		12	; channel 0
-.const INT_CH1		13	; channel 1
-.const INT_CH2		14	; channel 2
-.const INT_CH3		15	; channel 3
-.const INT_CH4		16	; channel 4
-.const INT_CH5		17	; channel 5
-.const INT_CH6		18	; channel 6
-.const INT_CH7		19	; channel 7
-.const INT_CH8		20	; channel 8
-.const INT_CH9		21	; channel 9
-.const INT_CH10		22	; channel 10
-.const INT_CH11		23	; channel 11
-.const INT_CH12		24	; channel 12
-.const INT_CH13		25	; channel 13
-.const INT_CH14		26	; channel 14
-.const INT_CH15		27	; channel 15
-.const INT_OPRQ		28	; operator request
-.const INT_CPU_L	29	; other CPU low interrupt
-.const INT_SW_H		30	; software high interrupt
-.const INT_SW_L		31	; software low interrupt
-
 ; interrupt vectors
 
-.const INTV_POWER	INTV + INT_POWER
-.const INTV_PARITY	INTV + INT_PARITY
-.const INTV_NOMEM	INTV + INT_NOMEM
-.const INTV_CPU_H	INTV + INT_CPU_H
-.const INTV_IFPOWER	INTV + INT_IFPOWER
-.const INTV_TIMER	INTV + INT_TIMER
-.const INTV_ILLEGAL	INTV + INT_ILLEGAL
-.const INTV_DIV_OF	INTV + INT_DIV_OF
-.const INTV_FP_UF	INTV + INT_FP_UF
-.const INTV_FP_OF	INTV + INT_FP_OF
-.const INTV_FP_ERR	INTV + INT_FP_ERR
-.const INTV_FP_DIV0	INTV_FP_ERR
-.const INTV_UNUSED	INTV + INT_UNUSED
-.const INTV_CH0		INTV + INT_CH0
-.const INTV_CH1		INTV + INT_CH1
-.const INTV_CH2		INTV + INT_CH2
-.const INTV_CH3		INTV + INT_CH3
-.const INTV_CH4		INTV + INT_CH4
-.const INTV_CH5		INTV + INT_CH5
-.const INTV_CH6		INTV + INT_CH6
-.const INTV_CH7		INTV + INT_CH7
-.const INTV_CH8		INTV + INT_CH8
-.const INTV_CH9		INTV + INT_CH9
-.const INTV_CH10	INTV + INT_CH10
-.const INTV_CH11	INTV + INT_CH11
-.const INTV_CH12	INTV + INT_CH12
-.const INTV_CH13	INTV + INT_CH13
-.const INTV_CH14	INTV + INT_CH14
-.const INTV_CH15	INTV + INT_CH15
-.const INTV_OPRQ	INTV + INT_OPRQ
-.const INTV_CPU_L	INTV + INT_CPU_L
-.const INTV_SW_H	INTV + INT_SW_H
-.const INTV_SW_L	INTV + INT_SW_L
+.const INTV_POWER	INTV + 0	; CPU power supply failure
+.const INTV_PARITY	INTV + 1	; memory parity error
+.const INTV_NOMEM	INTV + 2	; segmentation fault
+.const INTV_CPU_H	INTV + 3	; interrupt from the other CPU, high
+.const INTV_IFPOWER	INTV + 4	; interface power failure (from another module)
+.const INTV_TIMER	INTV + 5	; timer interrupt
+.const INTV_ILLEGAL	INTV + 6	; illegal instruction
+.const INTV_DIV_OF	INTV + 7	; division overflow
+.const INTV_FP_UF	INTV + 8	; floating point underflow
+.const INTV_FP_OF	INTV + 9	; floating point overflow
+.const INTV_FP_ERR	INTV + 10	; floating point error...
+.const INTV_FP_DIV0	INTV_FP_ERR	; ...or floating point division by 0
+.const INTV_UNUSED	INTV + 11	; unused interrupt
+.const INTV_CH0		INTV + 12	; channel interrupts
+.const INTV_CH1		INTV + 13
+.const INTV_CH2		INTV + 14
+.const INTV_CH3		INTV + 15
+.const INTV_CH4		INTV + 16
+.const INTV_CH5		INTV + 17
+.const INTV_CH6		INTV + 18
+.const INTV_CH7		INTV + 19
+.const INTV_CH8		INTV + 20
+.const INTV_CH9		INTV + 21
+.const INTV_CH10	INTV + 22
+.const INTV_CH11	INTV + 23
+.const INTV_CH12	INTV + 24
+.const INTV_CH13	INTV + 25
+.const INTV_CH14	INTV + 26
+.const INTV_CH15	INTV + 27
+.const INTV_OPRQ	INTV + 28	; operator request
+.const INTV_CPU_L	INTV + 29	; interrupt from the other CPU, low
+.const INTV_SW_H	INTV + 30	; software interrupt, high
+.const INTV_SW_L	INTV + 31	; software interrupt, low
 
 ; interrupt masks
 
@@ -128,27 +92,27 @@
 .const IMASK_ALL	0b1111111111000000	; all interrupts
 .const IMASK_NONE	0b0000000000000000	; no interrupts
 
-; 16-bit subset of interrupts accessible by instructions 'ki' and 'fi'
+; 16-bit subset of RZ interrupt register accessible with 'ki' and 'fi' instructions
 
-.const	I16_POWER	0b1000000000000000
-.const	I16_PARITY	0b0100000000000000
-.const	I16_NOMEM	0b0010000000000000
-.const	I16_CPU_H	0b0001000000000000
-.const	I16_IFPOWER	0b0000100000000000
-.const	I16_TIMER	0b0000010000000000
-.const	I16_ILLEGAL	0b0000001000000000
-.const	I16_DIV_OF	0b0000000100000000
-.const	I16_FP_UF	0b0000000010000000
-.const	I16_FP_OF	0b0000000001000000
-.const	I16_FP_ERR	0b0000000000100000
-.const	I16_DIV0	I_FP_ERR
-.const	I16_EXTRA	0b0000000000010000
-.const	I16_OPRQ	0b0000000000001000
-.const	I16_CPU_L	0b0000000000000100
-.const	I16_SW_H	0b0000000000000010
-.const	I16_SW_L	0b0000000000000001
-.const	I16_ALL		0b1111111111111111
-.const	I16_NONE	0b0000000000000000
+.const I_POWER		0b1000000000000000
+.const I_PARITY		0b0100000000000000
+.const I_NOMEM		0b0010000000000000
+.const I_CPU_H		0b0001000000000000
+.const I_IFPOWER	0b0000100000000000
+.const I_TIMER		0b0000010000000000
+.const I_ILLEGAL	0b0000001000000000
+.const I_DIV_OF		0b0000000100000000
+.const I_FP_UF		0b0000000010000000
+.const I_FP_OF		0b0000000001000000
+.const I_FP_ERR		0b0000000000100000
+.const I_DIV0		I_FP_ERR
+.const I_EXTRA		0b0000000000010000
+.const I_OPRQ		0b0000000000001000
+.const I_CPU_L		0b0000000000000100
+.const I_SW_H		0b0000000000000010
+.const I_SW_L		0b0000000000000001
+.const I_ALL		0b1111111111111111
+.const I_NONE		0b0000000000000000
 
 ; software fp procedure vectors
 

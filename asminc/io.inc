@@ -22,8 +22,8 @@
 
 ; channel I/O
 
-.const IO_CHAN	14	; bit position in N argument
-.const IO_DEV	10	; bit position in N argument
+.const IO_CHAN	14	; channel number position in N argument of I/O instructions
+.const IO_DEV	10	; device number position in N argument of I/O instructions
 
 ; general channel I/O commands
 
@@ -34,10 +34,10 @@
 ; memory configuration field locations
 
 .const MEM_CFG		1\15	; command is for memory module
-.const MEM_PAGE		3	; page position (in r argument)
-.const MEM_SEGMENT	15	; segment position (in r argument)
-.const MEM_FRAME	10	; frame position (in N argument)
-.const MEM_MODULE	14	; module position (in N argument)
+.const MEM_PAGE		3	; page position in r argument of OU instruction
+.const MEM_SEGMENT	15	; segment position in r argument of OU instruction
+.const MEM_FRAME	10	; frame position in N argument of OU instruction
+.const MEM_MODULE	14	; module position in N argument of OU instruction
 
 .endif
 
