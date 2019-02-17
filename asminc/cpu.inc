@@ -76,43 +76,43 @@
 
 ; interrupt masks
 
-.const IMASK_PARITY	0b1000000000000000	; parity
-.const IMASK_NOMEM	0b0100000000000000	; no memory
-.const IMASK_CPU_H	0b0010000000000000	; cpu high
-.const IMASK_IFPOWER	0b0001000000000000	; interface power
-.const IMASK_GROUP_H	0b0000100000000000	; timer, illegal instruction, arithmetic, unused
-.const IMASK_CH0_1	0b0000010000000000	; channel 0-1
-.const IMASK_CH2_3	0b0000001000000000	; channel 2-3
-.const IMASK_CH4_9	0b0000000100000000	; channel 4-9
-.const IMASK_CH10_15	0b0000000010000000	; channel 10-15
-.const IMASK_GROUP_L	0b0000000001000000	; oprq, cpu low, software low, software low
+.const IMASK_PARITY	1\0	; parity
+.const IMASK_NOMEM	1\1	; no memory
+.const IMASK_CPU_H	1\2	; cpu high
+.const IMASK_IFPOWER	1\3	; interface power
+.const IMASK_GROUP_H	1\4	; timer, illegal instruction, arithmetic, unused
+.const IMASK_CH0_1	1\5	; channel 0-1
+.const IMASK_CH2_3	1\6	; channel 2-3
+.const IMASK_CH4_9	1\7	; channel 4-9
+.const IMASK_CH10_15	1\8	; channel 10-15
+.const IMASK_GROUP_L	1\9	; oprq, cpu low, software low, software low
 
-.const IMASK_ALL_MEM	0b1100000000000000	; all memory interrupts
-.const IMASK_ALL_CH	0b0000011110000000	; all channel interrupts
-.const IMASK_ALL	0b1111111111000000	; all interrupts
-.const IMASK_NONE	0b0000000000000000	; no interrupts
+.const IMASK_ALL_MEM	0xc000	; all memory interrupts
+.const IMASK_ALL_CH	0x0780	; all channel interrupts
+.const IMASK_ALL	0xffc0	; all interrupts
+.const IMASK_NONE	0	; no interrupts
 
 ; 16-bit subset of RZ interrupt register accessible with 'ki' and 'fi' instructions
 
-.const I_POWER		0b1000000000000000
-.const I_PARITY		0b0100000000000000
-.const I_NOMEM		0b0010000000000000
-.const I_CPU_H		0b0001000000000000
-.const I_IFPOWER	0b0000100000000000
-.const I_TIMER		0b0000010000000000
-.const I_ILLEGAL	0b0000001000000000
-.const I_DIV_OF		0b0000000100000000
-.const I_FP_UF		0b0000000010000000
-.const I_FP_OF		0b0000000001000000
-.const I_FP_ERR		0b0000000000100000
+.const I_POWER		1\0
+.const I_PARITY		1\1
+.const I_NOMEM		1\2
+.const I_CPU_H		1\3
+.const I_IFPOWER	1\4
+.const I_TIMER		1\5
+.const I_ILLEGAL	1\6
+.const I_DIV_OF		1\7
+.const I_FP_UF		1\8
+.const I_FP_OF		1\9
+.const I_FP_ERR		1\10
 .const I_DIV0		I_FP_ERR
-.const I_EXTRA		0b0000000000010000
-.const I_OPRQ		0b0000000000001000
-.const I_CPU_L		0b0000000000000100
-.const I_SW_H		0b0000000000000010
-.const I_SW_L		0b0000000000000001
-.const I_ALL		0b1111111111111111
-.const I_NONE		0b0000000000000000
+.const I_EXTRA		1\11
+.const I_OPRQ		1\12
+.const I_CPU_L		1\13
+.const I_SW_H		1\14
+.const I_SW_L		1\15
+.const I_ALL		0xffff
+.const I_NONE		0
 
 ; software fp procedure vectors
 
