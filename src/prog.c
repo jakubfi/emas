@@ -694,7 +694,7 @@ int eval_as_short(struct st *t, int type, int op)
 
 	switch (type) {
 		case N_OP_SHC:
-			min = 0; max = 15;
+			min = -15; max = 15;
 			break;
 		case N_OP_T:
 			min = -63; max = 63;
@@ -753,6 +753,9 @@ int eval_op_short(struct st *t)
 
 	switch (t->type) {
 		case N_OP_SHC:
+			if (arg->val < 0) {
+				arg->val = 16 + arg->val;
+			}
 			arg->val = (arg->val & 0b111) | ((arg->val & 0b1000) << 6);
 			break;
 		case N_OP_T:
