@@ -111,7 +111,13 @@
 .const I_CPU_L		1\13
 .const I_SW_H		1\14
 .const I_SW_L		1\15
+
 .const I_ALL		0xffff
+.const I_ALL_CPU	0x1004
+.const I_ALL_ARITH	0x01e0
+.const I_ALL_FP		0x00e0
+.const I_ALL_SW		0x0003
+.const I_MASKABLE	0x7fff
 .const I_NONE		0
 
 ; software fp procedure vectors
