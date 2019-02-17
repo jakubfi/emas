@@ -38,7 +38,8 @@ int yylex_destroy();
 extern FILE *yyin;
 
 char *input_file;
-char *output_file = NULL;
+char *output_file;
+char *basename;
 int otype = O_RAW;
 
 // -----------------------------------------------------------------------
@@ -46,7 +47,7 @@ void usage()
 {
 	printf("Usage: emas [options] [input]\n");
 	printf("Where options are one or more of:\n");
-	printf("   -o <output>    : set output file (a.out otherwise)\n");
+	printf("   -o <output>    : set output file\n");
 	printf("   -c <cpu>       : set CPU type: mera400, mx16\n");
 	printf("   -O <otype>     : set output type: raw, debug, emelf, keys (defaults to raw)\n");
 	printf("   -I <dir>       : search for include files in <dir>\n");
@@ -132,7 +133,7 @@ int main(int argc, char **argv)
 {
 	int ret = 1;
 	int res;
-	FILE *outf;
+	FILE *outf = NULL;
 
 	if (kw_init() < 0) {
 		printf("Internal dictionary initialization failed.\n");
@@ -201,23 +202,42 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((otype != O_DEBUG) && (otype != O_KEYS)) {
-		if (!output_file) {
-			output_file = strdup("a.out");
+	if (!output_file) {
+		basename = strdup(input_file);
+		char *of_dot = strrchr(basename, '.');
+		if (of_dot) {
+			*of_dot = '\0';
 		}
-		outf = fopen(output_file, "w");
-	} else {
-		if (!output_file) {
-			output_file = strdup("(stdout)");
-			outf = stdout;
-		} else {
-			outf = fopen(output_file, "w");
+		switch (otype) {
+			case O_DEBUG:
+			case O_KEYS:
+				output_file = strdup("(stdout)");
+				outf = stdout;
+				break;
+			case O_EMELF:
+				output_file = malloc(strlen(basename)+3);
+				sprintf(output_file, "%s.o", basename);
+				break;
+			case O_RAW:
+				output_file = strdup(basename);
+				break;
+			default:
+				printf("Unknown output file type.");
+				goto cleanup;
 		}
 	}
 
-	if (!outf) {
-		printf("Cannot open output file '%s' for writing\n", output_file);
+	if (!strcmp(input_file, output_file)) {
+		printf("Input and output file names cannot be the same: '%s'\n", output_file);
 		goto cleanup;
+	}
+
+	if (outf != stdout) {
+		outf = fopen(output_file, "w");
+		if (!outf) {
+			printf("Cannot open output file '%s' for writing\n", output_file);
+			goto cleanup;
+		}
 	}
 
 	switch (otype) {
@@ -256,6 +276,7 @@ cleanup:
 	st_drop(entry);
 	kw_destroy();
 	free(output_file);
+	free(basename);
 
 	return ret;
 }
