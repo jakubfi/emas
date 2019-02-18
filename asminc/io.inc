@@ -25,11 +25,22 @@
 .const IO_CHAN	14	; channel number position in N argument of I/O instructions
 .const IO_DEV	10	; device number position in N argument of I/O instructions
 
-; general channel I/O commands
+; general channel commands
 
-.const IO_RESET		0b000\2 | 0b00\4	; IN, channel reset
-.const IO_INTSPEC	0b000\2 | 0b01\4	; IN, get interrupt specification
-.const IO_EXISTS	0b000\2 | 0b10\4	; IN, check if channel exists
+.const IO_EXISTS		0b00000\4	; IN or OU, check if channel exists
+.const IO_INT_MASK		0b00001\4	; OU, suspend interrupts to this CPU
+.const IO_INT_MASK_OTHER	0b00010\4	; OU, suspend interrupts to the other CPU
+.const IO_INT_ASSIGN		0b00011\4	; OU, assign device to this CPU
+.const IO_INTSPEC		0b00001\4	; IN, get interrupt specification
+.const IO_INT_GET_ALLOC		0b00011\4	; IN, get device interrupt allocation
+
+; device-specific I/O commands
+
+.const IO_CHAR_EXISTS	0b100\2	; IN, check if device exists
+.const IO_CHAR_READ	0b101\2	; IN, read byte
+.const IO_CHAR_RESET	0b100\2	; OU, reset device
+.const IO_CHAR_DETACH	0b101\2	; OU, detach device (soft reset)
+.const IO_CHAR_WRITE	0b110\2	; OU, write byte
 
 ; memory configuration field locations
 
