@@ -106,7 +106,7 @@
 .const I_FP_OF		1\9
 .const I_FP_ERR		1\10
 .const I_DIV0		I_FP_ERR
-.const I_EXTRA		1\11
+.const I_UNUSED		1\11
 .const I_OPRQ		1\12
 .const I_CPU_L		1\13
 .const I_SW_H		1\14
