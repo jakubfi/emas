@@ -169,6 +169,7 @@ int main(int argc, char **argv)
 
 	inc_path_add(".");
 	inc_path_add("/usr/share/emas/include");
+	inc_path_add("/usr/local/share/emas/include");
 
 	AADEBUG("==== Parse ================================");
 	if (yyparse()) {
