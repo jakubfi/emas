@@ -35,6 +35,7 @@ char str_buf[STR_MAX+1];
 int str_len;
 struct st *filenames;
 struct st *inc_paths;
+char *cur_label;
 
 // -----------------------------------------------------------------------
 void llerror(char *s, ...)

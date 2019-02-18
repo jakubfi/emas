@@ -230,8 +230,13 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	while (YY_START != INITIAL) yy_pop_state();
 	struct dh_elem *p = pragma_get(yytext);
 	if (!p) {
-		llerror("Unknown assembler directive: \"%s\"", yytext);
-		return INVALID_PRAGMA;
+		if (!cur_label) {
+			llerror("Cannot use local label \"%s\" outside a global label context" , yytext);
+			return INVALID_LABEL;
+		}
+		yylval.s = malloc(strlen(cur_label)+strlen(yytext)+1);
+		sprintf(yylval.s, "%s%s", cur_label, yytext);
+		return NAME;
 	}
 	switch (p->type) {
 		case P_INCLUDE:
@@ -296,17 +301,36 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 }
 
- /* ---- LABEL ----------------------------------------------------------- */
+ /* ---- LABELS ---------------------------------------------------------- */
 {name}":" {
 	while (YY_START != INITIAL) yy_pop_state();
 	yylval.s = strdup(yytext);
 	yylval.s[yyleng-1] = '\0';
+	free(cur_label);
+	cur_label = strdup(yylval.s);
+	return LABEL;
+}
+"."{name}":" {
+	yytext[yyleng-1] = '\0';
+	struct dh_elem *p = pragma_get(yytext);
+	if (p) {
+		llerror("Cannot use assembler directive \"%s\" as a label" , yytext);
+		return INVALID_LABEL;
+	}
+	if (!cur_label) {
+		llerror("Cannot define local label \"%s\" outside a global label context" , yytext);
+		return INVALID_LABEL;
+	}
+	while (YY_START != INITIAL) yy_pop_state();
+	yylval.s = malloc(strlen(cur_label)+strlen(yytext)+1);
+	sprintf(yylval.s, "%s%s", cur_label, yytext);
 	return LABEL;
 }
 
+
  /* ---- NAMES and OPS --------------------------------------------------- */
 
-{name} {
+{name}|{name}"."{name} {
 	struct dh_elem *p = mnemo_get(yytext);
 	if (p) {
 		while (YY_START != INITIAL) yy_pop_state();
@@ -324,6 +348,7 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	if (yy_start_stack_ptr) yy_top_state(); // just to suppress warning
 	yypop_buffer_state();
 	loc_pop();
+	free(cur_label);
 	if (!YY_CURRENT_BUFFER) {
 		yyterminate();
 	}

@@ -70,6 +70,7 @@ typedef struct YYLTYPE {
 %token INVALID_INT "invalid integer"
 %token INVALID_FLOAT "invalid float"
 %token INVALID_REGISTER "invalid register"
+%token INVALID_LABEL "invalid local label"
 %token <s> STRING "string"
 %token <v> INT "integer"
 %token <f> FLOAT "float"

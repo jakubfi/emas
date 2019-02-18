@@ -38,6 +38,7 @@ struct loc loc_stack[INCLUDE_MAX+1];
 int loc_pos;
 struct st *filenames;
 struct st *inc_paths;
+extern char *cur_label;
 
 extern char str_buf[STR_MAX+1];
 extern int str_len;
