@@ -102,7 +102,7 @@ int parse_args(int argc, char **argv)
 				exit(0);
 				break;
 			case 'v':
-				printf("EMAS v%s - modern MERA 400 assembler\n", EMAS_VERSION);
+				printf("EMAS v%s - modern assembler for MERA-400 minicomputer system\n", EMAS_VERSION);
 				exit(0);
 				break;
 			case 'd':
