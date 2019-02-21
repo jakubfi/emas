@@ -505,10 +505,12 @@ int eval_label(struct st *t)
 		tic->relative = 1;
 		dh_addt(sym, t->str, SYM_CONST, tic);
 	} else if (s->type & SYM_UNDEFINED) {
+		// this is when .global label appears before label
 		s->type &= ~SYM_UNDEFINED;
 		s->type |= SYM_CONST;
-		s->t = st_int(N_INT, ic);
-		s->t->relative = 1;
+		tic = st_int(N_INT, ic);
+		tic->relative = 1;
+		s->t = tic;
 	} else {
 		aaerror(t, "Symbol '%s' already defined", t->str);
 		return -1;
@@ -666,7 +668,7 @@ int eval_struct(struct st *t)
 		args = args->next;
 	}
 
-	// update structure size
+	// update structure size only when all field sizes are known
 	s->t->val = t->last->val + t->last->args->val;
 	s->type &= ~SYM_UNDEFINED;
 
@@ -694,11 +696,11 @@ int eval_struct_field(struct st *t)
 		s->t->val = t->val;
 		s->type &= ~SYM_UNDEFINED;
 	} else { // if this is not the first element
-		if (t->prev->args->val != 0) { // size of the previous field is known
-			struct dh_elem *ps = dh_get(sym, t->prev->str);
+		if (t->prev->args->type == N_INT) { // size of the previous field is known
+			struct dh_elem *ps = dh_get(sym, t->prev->str); // get the offset
 			if (!(ps->type & SYM_UNDEFINED)) { // offset of the previous field is known
-				t->val = t->prev->args->val + t->prev->val; // this element offset
-				s->t->val = t->val;
+				t->val = t->prev->args->val + t->prev->val; // update this element offset
+				s->t->val = t->val; // update element in the dictionary
 				s->type &= ~SYM_UNDEFINED;
 			}
 		}
