@@ -57,6 +57,8 @@ int kw_init()
 	PRAGMA_ADD(".ifndef", P_IFNDEF);
 	PRAGMA_ADD(".else", P_ELSE);
 	PRAGMA_ADD(".endif", P_ENDIF);
+	PRAGMA_ADD(".struct", P_STRUCT);
+	PRAGMA_ADD(".endstruct", P_ENDSTRUCT);
 
 	OP_ADD("LW", OP_RN, 0b0100000000000000);
 	OP_ADD("TW", OP_RN, 0b0100010000000000);

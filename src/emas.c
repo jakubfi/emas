@@ -269,6 +269,7 @@ int main(int argc, char **argv)
 	ret = 0;
 
 cleanup:
+
 	yylex_destroy();
 	st_drop(inc_paths);
 	st_drop(filenames);

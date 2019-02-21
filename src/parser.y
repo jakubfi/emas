@@ -102,6 +102,8 @@ typedef struct YYLTYPE {
 %token P_IFNDEF ".ifndef"
 %token P_ELSE ".else"
 %token P_ENDIF ".endif"
+%token P_STRUCT ".struct"
+%token P_ENDSTRUCT ".endstruct"
 
 %token <v> OP_RN "reg-norm-arg op"
 %token <v> OP_N "norm-arg op"
@@ -135,6 +137,7 @@ typedef struct YYLTYPE {
 %type <t> line lines op pragma
 %type <t> norm normval expr exprs
 %type <t> float floats
+%type <t> struct_field struct_fields
 
 %destructor { st_drop($$); } <t>
 %destructor { free($$); } <s>
@@ -226,7 +229,18 @@ pragma:
 	| P_IFDEF NAME lines P_ELSE lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $3); st_arg_app($$, $5); free($2); }
 	| P_IFNDEF NAME lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, st_int(N_PROG, 0)); st_arg_app($$, $3); free($2); }
 	| P_IFNDEF NAME lines P_ELSE lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $5); st_arg_app($$, $3); free($2); }
+	| P_STRUCT LABEL struct_fields P_ENDSTRUCT { $$ = st_str(N_STRUCT, $2); free($2); st_arg_app($$, $3); }
 	;
+
+/* ---- STRUCT ----------------------------------------------------------- */
+
+struct_fields:
+	struct_field
+	| struct_field struct_fields { $$ = st_app($1, $2); }
+	;
+
+struct_field:
+	LABEL P_RES expr { $$ = st_str(N_STRUCT_FIELD, $1); free($1); st_arg_app($$, $3); }
 
 /* ---- EXPR ------------------------------------------------------------- */
 

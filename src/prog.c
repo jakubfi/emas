@@ -74,6 +74,8 @@ struct eval_t eval_tab[] = {
 	{ ".entry",	eval_entry },
 	{ ".global",eval_global },
 	{ ".ifdef",	eval_ifdef },
+	{ ".struct",eval_struct },
+    { "SFIELD",	eval_struct_field },
 	{ "LABEL",	eval_label },
 	{ ".equ",	eval_equ },
 	{ ".const",	eval_const },
@@ -642,6 +644,70 @@ int eval_ifdef(struct st *t)
 	t->type = N_NONE;
 
 	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_struct(struct st *t)
+{
+	struct dh_elem *s;
+
+	s = dh_get(sym, t->str);
+	if (!s) {
+		s = dh_addt(sym, t->str, SYM_CONST | SYM_UNDEFINED, st_int(N_INT, 0));
+	}
+
+	// evaluate all arguments (struct fields)
+	struct st *args = t->args;
+	while (args) {
+		int u = eval(args);
+		if (u) {
+			return u;
+		}
+		args = args->next;
+	}
+
+	// update structure size
+	s->t->val = t->last->val + t->last->args->val;
+	s->type &= ~SYM_UNDEFINED;
+
+	// drop the arguments subtree
+	t->type = N_NONE;
+	st_drop(t->args);
+	t->args = t->last = NULL;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_struct_field(struct st *t)
+{
+	int u;
+	struct dh_elem *s;
+
+	s = dh_get(sym, t->str);
+    if (!s) {
+        s = dh_addt(sym, t->str, SYM_CONST | SYM_UNDEFINED, st_int(N_INT, 0));
+	}
+
+	if (!t->prev) { // offset for the first element is always known = 0
+		t->val = 0;
+		s->t->val = t->val;
+		s->type &= ~SYM_UNDEFINED;
+	} else { // if this is not the first element
+		if (t->prev->args->val != 0) { // size of the previous field is known
+			struct dh_elem *ps = dh_get(sym, t->prev->str);
+			if (!(ps->type & SYM_UNDEFINED)) { // offset of the previous field is known
+				t->val = t->prev->args->val + t->prev->val; // this element offset
+				s->t->val = t->val;
+				s->type &= ~SYM_UNDEFINED;
+			}
+		}
+	}
+
+	// evaluate size of this struct element
+	u = eval(t->args);
+
+	return u;
 }
 
 // -----------------------------------------------------------------------
