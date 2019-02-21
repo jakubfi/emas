@@ -100,7 +100,7 @@ struct dh_elem * dh_add(struct dh_table *dh, char *name, int type, int value, st
 	new_elem->next = dh->slots[hash];
 	dh->slots[hash] = new_elem;
 
-	return elem;
+	return new_elem;
 }
 
 // -----------------------------------------------------------------------
