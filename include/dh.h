@@ -38,7 +38,6 @@ struct dh_table {
 };
 
 struct dh_table * dh_create(int size, int case_sens);
-unsigned dh_hash(struct dh_table *dh, char *name);
 struct dh_elem * dh_get(struct dh_table *dh, char *name);
 struct dh_elem * dh_add(struct dh_table *dh, char *name, int type, int value, struct st *t);
 #define dh_addv(dh, name, type, value) dh_add(dh, name, type, value, NULL)
