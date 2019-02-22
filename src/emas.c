@@ -234,11 +234,14 @@ int main(int argc, char **argv)
 				}
 			}
 
-			outf = fopen(output_file, "w");
-			if (!outf) {
-				printf("Cannot open output file '%s' for writing\n", output_file);
-				goto cleanup;
-			}
+		}
+	}
+
+	if (outf != stdout) {
+		outf = fopen(output_file, "w");
+		if (!outf) {
+			printf("Cannot open output file '%s' for writing\n", output_file);
+			goto cleanup;
 		}
 	}
 
