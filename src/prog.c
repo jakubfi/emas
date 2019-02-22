@@ -184,7 +184,7 @@ int eval_1arg(struct st *t)
 	}
 
 	t->type = N_INT;
-	t->relative = arg->relative;
+	t->flags |= arg->flags & ST_RELATIVE;
 	st_drop(arg);
 	t->args = t->last = NULL;
 
@@ -212,10 +212,10 @@ int eval_2arg(struct st *t)
 			arg1->relative ? "relative" : "absolute",
 			arg2->relative ? "relative" : "absolute");
 		return -1;
-	} else */if ((t->type == N_MINUS) && (arg1->relative) && (arg2->relative)) {
-		t->relative = 0;
+	} else */if ((t->type == N_MINUS) && (arg1->flags & ST_RELATIVE) && (arg2->flags & ST_RELATIVE)) {
+		t->flags &= ~ST_RELATIVE;
 	} else {
-		t->relative = arg1->relative | arg2->relative;
+		t->flags |= (arg1->flags | arg2->flags) & ST_RELATIVE;
 	}
 
 	switch (t->type) {
@@ -325,7 +325,7 @@ int eval_word(struct st *t)
 	}
 
 	t->type = N_INT;
-	t->relative = t->args->relative;
+	t->flags |= t->args->flags & ST_RELATIVE;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -502,14 +502,14 @@ int eval_label(struct st *t)
 
 	if (!s) {
 		tic = st_int(N_INT, ic);
-		tic->relative = 1;
+		tic->flags |= ST_RELATIVE;
 		dh_addt(sym, t->str, SYM_CONST, tic);
 	} else if (s->type & SYM_UNDEFINED) {
 		// this is when .global label appears before label
 		s->type &= ~SYM_UNDEFINED;
 		s->type |= SYM_CONST;
 		tic = st_int(N_INT, ic);
-		tic->relative = 1;
+		tic->flags |= ST_RELATIVE;
 		s->t = tic;
 	} else {
 		aaerror(t, "Symbol '%s' already defined", t->str);
@@ -731,9 +731,7 @@ int eval_name(struct st *t)
 	}
 	t->val = s->t->val;
 
-	if (s->t->relative) {
-		t->relative = 1;
-	}
+	t->flags |= s->t->flags & ST_RELATIVE;
 
 	t->type = N_INT;
 
@@ -745,7 +743,7 @@ int eval_curloc(struct st *t)
 {
 	t->type = N_INT;
 	t->val = ic;
-	t->relative = 1;
+	t->flags |= ST_RELATIVE;
 	return 0;
 }
 
@@ -787,7 +785,7 @@ int eval_as_short(struct st *t, int type, int op)
 			break;
 	}
 
-	if (rel_op && t->relative) {
+	if (rel_op && (t->flags & ST_RELATIVE)) {
 		int diff = t->val - (ic+1);
 		if (diff >= 65535 - 63) {
 			t->val = diff - 65536;

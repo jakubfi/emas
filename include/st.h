@@ -39,7 +39,12 @@ struct st {
 						// Upon evaluation, nodes get additional properties:
 	int ic;				//  * IC at which node is to be rendered
 	int size;			//  * size of data that node actually holds
-	int relative;		//  * set if node holds object-relative value
+	int flags;			//  * set if node holds object-relative value
+};
+
+enum st_flags {
+	ST_NONE		= 0,
+	ST_RELATIVE	= 1 << 0,
 };
 
 struct st * st_copy(struct st *t);

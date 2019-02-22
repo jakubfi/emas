@@ -48,7 +48,7 @@ struct st * st_new(int type, int val, double flo, char *str, struct st *args)
 
 	sx->ic = -1;
 	sx->size = 0;
-	sx->relative = 0;
+	sx->flags = ST_NONE;
 
 	if (yylloc.filename) {
 		sx->loc_file = strdup(yylloc.filename);

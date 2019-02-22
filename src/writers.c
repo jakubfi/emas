@@ -261,7 +261,7 @@ static int try_reloc(struct st *t, struct emelf *e)
 
 	if (arg_int) {
 		image[t->ic] = arg_int->val;
-		if (arg_int->relative) {
+		if (arg_int->flags & ST_RELATIVE) {
 			flags |= EMELF_RELOC_BASE;
 		}
 	} else {
@@ -289,7 +289,7 @@ static int write_global_symbols(struct dh_table *dh, struct emelf *e)
 				if (eval(elem->t)) {
 					return 1;
 				}
-				rel = elem->t->relative ? EMELF_SYM_RELATIVE : 0;
+				rel = (elem->t->flags & ST_RELATIVE) ? EMELF_SYM_RELATIVE : 0;
 				emelf_symbol_add(e, EMELF_SYM_GLOBAL | rel, elem->name, elem->t->val);
 			}
 			elem = elem->next;
@@ -318,7 +318,7 @@ int writer_emelf(struct st *prog, struct dh_table *symbols, FILE *f)
 	while (t) {
 		switch (t->type) {
 			case N_INT:
-				if (t->relative) {
+				if ((t->flags & ST_RELATIVE)) {
 					emelf_reloc_add(e, t->ic, EMELF_RELOC_BASE, -1);
 				}
 			case N_BLOB:
