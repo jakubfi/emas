@@ -337,6 +337,7 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	yypop_buffer_state();
 	loc_pop();
 	free(cur_label);
+	cur_label = NULL;
 	if (!YY_CURRENT_BUFFER) {
 		yyterminate();
 	}
