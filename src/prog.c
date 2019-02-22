@@ -62,15 +62,12 @@ struct eval_t eval_tab[] = {
 	{ "- (unary)",eval_1arg },
 	{ "~",		eval_1arg },
 	{ ".word",	eval_word },
-	{ ".lbyte",	eval_word },
-	{ ".rbyte",	eval_word },
 	{ ".dword",	eval_multiword },
 	{ ".float",	eval_multiword },
 	{ ".res",	eval_res },
 	{ ".org",	eval_org },
 	{ ".ascii",	eval_string },
 	{ ".asciiz",eval_string },
-	{ ".r40",	eval_r40},
 	{ ".entry",	eval_entry },
 	{ ".global",eval_global },
 	{ ".ifdef",	eval_ifdef },
@@ -308,20 +305,6 @@ int eval_word(struct st *t)
 			}
 			t->val = t->args->val;
 			break;
-		case N_RBYTE:
-			if ((t->args->val < 0) || (t->args->val > 255)) {
-				aaerror(t, "Value %i is not an 8-bit unsigned integer", t->args->val);
-				return -1;
-			}
-			t->val = t->args->val;
-			break;
-		case N_LBYTE:
-			if ((t->args->val < 0) || (t->args->val > 255)) {
-				aaerror(t, "Value %i is not an 8-bit unsigned integer", t->args->val);
-				return -1;
-			}
-			t->val = t->args->val << 8;
-			break;
 	}
 
 	t->type = N_INT;
@@ -466,27 +449,6 @@ int eval_string(struct st *t)
 		if ((pos == 1) || (chars <= 0)) {
 			t->size++;
 		}
-	}
-
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int eval_r40(struct st *t)
-{
-	char *s = t->str;
-	int chars = strlen(s);
-	int words = (chars+2) / 3;
-
-	t->data = malloc(words * sizeof(uint16_t));
-	t->size = 0;
-	t->type = N_BLOB;
-
-	while (words > 0) {
-		t->data[t->size] = str2r40(s);
-		t->size++;
-		words--;
-		s += 3;
 	}
 
 	return 0;

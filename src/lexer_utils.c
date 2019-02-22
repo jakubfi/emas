@@ -153,38 +153,6 @@ int flag2mask(char c)
 }
 
 // -----------------------------------------------------------------------
-int str2r40(char *str)
-{
-	int val = 0;
-	int mul = 1600;
-	char *s = str;
-
-	while (*s && (mul >= 1)) {
-		if ((*s >= 'A') && (*s <= 'Z')) {
-			val += mul * (*s - 64);
-		} else if ((*s >= 'a') && (*s <= 'z')) {
-			val += mul * (*s - 96);
-		} else if ((*s >= '0') && (*s <= '9')) {
-			val += mul * (*s - 21);
-		} else if (*s == ' ') {
-			val += mul * 0;
-		} else if (*s == '_') {
-			val += mul * 37;
-		} else if (*s == '%') {
-			val += mul * 38;
-		} else if (*s == '#') {
-			val += mul * 39;
-		} else {
-			return -(s-str+1);
-		}
-		mul /= 40;
-		s++;
-	}
-
-	return val;
-}
-
-// -----------------------------------------------------------------------
 void delchar(char *str, char c)
 {
 	char *r = str;

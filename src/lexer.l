@@ -150,18 +150,6 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	return INT;
 }
 
-'...' {
-	int v = str2r40(yytext+1);
-	if (v < 0) {
-		loc_stack[loc_pos].ocol += -v;
-		llerror("Character invalid for R40 encoding");
-		return INVALID_STRING;
-	} else {
-		yylval.v = v;
-		return INT;
-	}
-}
-
  /* ---- FLAGS ----------------------------------------------------------- */
 
 {flags} {

@@ -86,14 +86,11 @@ typedef struct YYLTYPE {
 %token P_INCLUDE ".include"
 %token P_EQU ".equ"
 %token P_CONST ".const"
-%token P_LBYTE ".lbyte"
-%token P_RBYTE ".rbyte"
 %token P_WORD ".word"
 %token P_DWORD ".dword"
 %token P_FLOAT ".float"
 %token P_ASCII ".ascii"
 %token P_ASCIIZ ".asciiz"
-%token P_R40 ".r40"
 %token P_RES ".res"
 %token P_ORG ".org"
 %token P_ENTRY ".entry"
@@ -212,14 +209,11 @@ pragma:
 	}
 	| P_EQU NAME expr { $$ = st_str(N_EQU, $2); st_arg_app($$, $3); free($2); }
 	| P_CONST NAME expr { $$ = st_str(N_CONST, $2); st_arg_app($$, $3); free($2); }
-	| P_LBYTE exprs { $$ = compose_list(N_LBYTE, $2); }
-	| P_RBYTE exprs { $$ = compose_list(N_RBYTE, $2); }
 	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
 	| P_DWORD exprs { $$ = compose_list(N_DWORD, $2); }
 	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
 	| P_ASCII STRING { $$ = st_str(N_ASCII, $2); free($2); }
 	| P_ASCIIZ STRING { $$ = st_str(N_ASCIIZ, $2); free($2); }
-	| P_R40 STRING { $$ = st_str(N_R40, $2); free($2); }
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }

@@ -67,15 +67,12 @@ enum node_types {
 	N_UMINUS,
 	N_NEG,
 	N_WORD,
-	N_LBYTE,
-	N_RBYTE,
 	N_DWORD,
 	N_FLOAT,
 	N_RES,
 	N_ORG,
 	N_ASCII,
 	N_ASCIIZ,
-	N_R40,
 	N_ENTRY,
 	N_GLOBAL,
 	N_IFDEF,
@@ -124,7 +121,6 @@ int eval_multiword(struct st *t);
 int eval_res(struct st *t);
 int eval_org(struct st *t);
 int eval_string(struct st *t);
-int eval_r40(struct st *t);
 int eval_label(struct st *t);
 int eval_equ(struct st *t);
 int eval_const(struct st *t);

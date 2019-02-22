@@ -46,7 +46,6 @@ extern int str_len;
 void llerror(char *s, ...);
 int unesc_char(char *c, int *esclen);
 int flag2mask(char c);
-int str2r40(char *str);
 int lex_int(char *str, int offset, int base, int *val);
 int lex_float(char *str, double *val);
 int str_append(char c);
