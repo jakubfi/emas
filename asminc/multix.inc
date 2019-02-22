@@ -20,21 +20,25 @@
 .ifndef __MX_IO__
 .const __MX_IO__ 1
 
-.include io.inc
+; channel I/O commands
 
-; I/O commands
+.const MX_CMD_RESET	0b00000\4	; IN, MULTIX reset
+.const MX_CMD_INTSPEC	0b00001\4	; IN, get interrupt specification
+.const MX_CMD_EXISTS	0b00010\4	; IN, check if MULTIX exists
 
-.const MX_IO_RESET	IO_RESET	; IN, MULTIX reset
-.const MX_IO_INTSPEC	IO_INTSPEC	; IN, get interrupt specification
-.const MX_IO_EXISTS	IO_EXISTS	; IN, check if MULTIX exists
-.const MX_IO_REQUEUE	0b001\2		; IN, requeue interrupt
-.const MX_IO_TEST	0b001\2		; OU, run MULTIX test
-.const MX_IO_SETCFG	0b101\2		; OU, set configuration
-.const MX_IO_ATTACH	0b010\2		; OU, attach line
-.const MX_IO_DETACH	0b010\2		; IN, detach line
-.const MX_IO_STATUS	0b011\2		; OU, get line status
-.const MX_IO_TRANSMIT	0b100\2		; OU, start transmission
-.const MX_IO_ABORT	0b011\2		; IN, abort transmission
+; general control commands
+
+.const MX_CMD_REQUEUE	0b001\2		; IN, requeue interrupt
+.const MX_CMD_TEST	0b001\2		; OU, run MULTIX test
+.const MX_CMD_SETCFG	0b101\2		; OU, set configuration
+
+; line control commands
+
+.const MX_CMD_ATTACH	0b010\2		; OU, attach line
+.const MX_CMD_DETACH	0b010\2		; IN, detach line
+.const MX_CMD_STATUS	0b011\2		; OU, get line status
+.const MX_CMD_TRANSMIT	0b100\2		; OU, start transmission
+.const MX_CMD_ABORT	0b011\2		; IN, abort transmission
 
 ; interrupt specifications
 
