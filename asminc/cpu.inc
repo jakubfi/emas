@@ -31,6 +31,13 @@
 .const INTV_SIZE	32	; there are 32 interrupts
 .const SFPV_SIZE	12	; there are 12 FP commands
 
+; offsets for the data on stack (data is at stackp-SP_xxx)
+
+.const SP_IC	4
+.const SP_R0	3
+.const SP_SR	2
+.const SP_SPEC	1
+
 ; SR field positions
 
 .const SR_NB		15	; bit position of NB in SR register
