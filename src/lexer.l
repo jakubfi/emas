@@ -317,6 +317,11 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 
 
  /* ---- NAMES and OPS --------------------------------------------------- */
+"."{name} {
+	yylval.s = malloc(strlen(cur_label)+strlen(yytext)+1);
+	sprintf(yylval.s, "%s%s", cur_label, yytext);
+	return NAME;
+}
 
 {name}|{name}"."{name} {
 	struct dh_elem *p = mnemo_get(yytext);
