@@ -36,11 +36,42 @@
 
 ; device-specific character channel (KZ) I/O commands
 
-.const KZ_CMD_DEV_EXISTS	0b100\2	; IN, check if device exists
-.const KZ_CMD_DEV_READ		0b101\2	; IN, read byte
-.const KZ_CMD_DEV_RESET		0b100\2	; OU, reset device
-.const KZ_CMD_DEV_DETACH	0b101\2	; OU, detach device (soft reset)
-.const KZ_CMD_DEV_WRITE		0b110\2	; OU, write byte
+.const KZ_CMD_DEV_EXISTS	0b10000\4	; IN, check if device exists
+.const KZ_CMD_DEV_READ		0b10100\4	; IN, read byte
+.const KZ_CMD_DEV_RESET		0b10000\4	; OU, reset device
+.const KZ_CMD_DEV_DETACH	0b10100\4	; OU, detach device (soft reset)
+.const KZ_CMD_DEV_WRITE		0b11000\4	; OU, write byte
+
+; 8" floppy drive commands
+
+.const KZ_CMD_CTL1		0b11100\4
+.const KZ_CMD_CTL2		0b11110\4
+.const KZ_CMD_CTL3		0b11111\4
+.const KZ_CMD_CTL4		0b11101\4
+
+; 8" floppy drive CTL* commands constants
+
+.const KZ_FLOPPY_DRIVE_0	0b000\2
+.const KZ_FLOPPY_DRIVE_1	0b001\2
+.const KZ_FLOPPY_DRIVE_2	0b100\2
+.const KZ_FLOPPY_DRIVE_3	0b101\2
+
+.const KZ_FLOPPY_SIDE_A		0\3
+.const KZ_FLOPPY_SIDE_B		1\3
+
+.const KZ_FLOPPY_TRACK		10 ; track number on bits 4-10
+.const KZ_FLOPPY_SECTOR		15 ; sector number on bits 11-15
+
+; interupt specifications (bits 0-7)
+
+.const KZ_INT_INVALID		0b00000000 ; general
+.const KZ_INT_DEVICE_READY	0b00000001 ; general
+.const KZ_INT_DATA_LOST		0b00000101 ; serial line
+.const KZ_INT_MEDIUM_END	0b00000100 ; 8" floppy
+.const KZ_INT_FAILURE		0b00000010 ; 8" floppy
+.const KZ_INT_SECTOR_NOT_FOUND	0b00011010 ; 8" floppy
+.const KZ_INT_CRC_ERROR		0b00001010 ; 8" floppy
+.const KZ_INT_SECTOR_DEFFECTIVE	0b00010010 ; 8" floppy
 
 ; memory configuration field locations
 
