@@ -318,6 +318,10 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 
  /* ---- NAMES and OPS --------------------------------------------------- */
 "."{name} {
+	if (!cur_label) {
+		llerror("Cannot use local label \"%s\" outside a global label context" , yytext);
+		return INVALID_LABEL;
+	}
 	yylval.s = malloc(strlen(cur_label)+strlen(yytext)+1);
 	sprintf(yylval.s, "%s%s", cur_label, yytext);
 	return NAME;
