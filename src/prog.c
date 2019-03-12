@@ -335,6 +335,11 @@ int eval_multiword(struct st *t)
 		default: assert(!"not a multiword"); break;
 	}
 
+	if ((t->size < 0) || (t->size > 65536)) {
+		aaerror(t, "Cannot fit the array in a process address space (%i words needed)", t->size);
+		return -1;
+	}
+
 	if (!t->data) {
 		t->data = malloc(t->size * sizeof(uint16_t));
 	}
@@ -378,8 +383,8 @@ int eval_res(struct st *t)
 		return -1;
 	}
 
-	if (t->args->val < 0) {
-		aaerror(t, "Cannot reserve %i words", t->args->val);
+	if ((t->args->val < 0) || (t->args->val > 65536)) {
+		aaerror(t, "Cannot reserve memory outside the process address space (requested %i words)", t->args->val);
 		return -1;
 	}
 
@@ -436,6 +441,11 @@ int eval_string(struct st *t)
 	chars = strlen(s);
 	if (t->type == N_ASCIIZ) chars++;
 	words = (chars+1) / 2;
+
+	if ((words < 0) || (words > 65536)) {
+		aaerror(t, "Cannot fit the string in a process address space (%i words needed)", words);
+		return -1;
+	}
 
 	t->data = malloc(words * sizeof(uint16_t));
 	t->size = 0;
