@@ -97,6 +97,7 @@ struct dh_elem * dh_add(struct dh_table *dh, char *name, int type, int value, st
 	new_elem->type = type;
 	new_elem->value = value;
 	new_elem->t = t;
+	new_elem->being_evaluated = 0;
 	new_elem->next = dh->slots[hash];
 	dh->slots[hash] = new_elem;
 

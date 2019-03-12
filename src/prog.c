@@ -72,7 +72,7 @@ struct eval_t eval_tab[] = {
 	{ ".global",eval_global },
 	{ ".ifdef",	eval_ifdef },
 	{ ".struct",eval_struct },
-    { "SFIELD",	eval_struct_field },
+	{ "SFIELD",	eval_struct_field },
 	{ "LABEL",	eval_label },
 	{ ".equ",	eval_equ },
 	{ ".const",	eval_const },
@@ -549,8 +549,7 @@ int eval_const(struct st *t)
 	t->type = N_NONE;
 	t->args = NULL;
 
-	return 0;
-}
+	return 0;}
 
 // -----------------------------------------------------------------------
 int eval_entry(struct st *t)
@@ -657,8 +656,8 @@ int eval_struct_field(struct st *t)
 	struct dh_elem *s;
 
 	s = dh_get(sym, t->str);
-    if (!s) {
-        s = dh_addt(sym, t->str, SYM_CONST | SYM_UNDEFINED, st_int(N_INT, 0));
+	if (!s) {
+		s = dh_addt(sym, t->str, SYM_CONST | SYM_UNDEFINED, st_int(N_INT, 0));
 	}
 
 	if (!t->prev) { // offset for the first element is always known = 0
@@ -695,14 +694,21 @@ int eval_name(struct st *t)
 
 	assert(s->t);
 
+	if (s->being_evaluated > 0) {
+		aaerror(t, "Symbol '%s' is defined recursively", t->str);
+		return 1;
+	}
+
+	s->being_evaluated++;
 	u = eval(s->t);
 	if (u) {
+		s->being_evaluated--;
 		return u;
 	}
+	s->being_evaluated--;
+
 	t->val = s->t->val;
-
 	t->flags |= s->t->flags & ST_RELATIVE;
-
 	t->type = N_INT;
 
 	return 0;

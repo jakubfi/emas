@@ -28,6 +28,7 @@ struct dh_elem {
 	int value;
 	struct st *t;
 	struct dh_elem *next;
+	int being_evaluated;
 };
 
 struct dh_table {
