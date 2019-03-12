@@ -226,9 +226,17 @@ int eval_2arg(struct st *t)
 			t->val = arg1->val * arg2->val;
 			break;
 		case N_DIV:
+			if (arg2->val == 0.0) {
+				aaerror(t, "Division by 0");
+				return -1;
+			}
 			t->val = arg1->val / arg2->val;
 			break;
 		case N_REM:
+			if (arg2->val == 0.0) {
+				aaerror(t, "Division by 0");
+				return -1;
+			}
 			t->val = arg1->val % arg2->val;
 			break;
 		case N_AND:
