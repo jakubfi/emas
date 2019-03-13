@@ -51,7 +51,7 @@ struct st * st_new(int type, int val, double flo, char *str, struct st *args)
 	sx->flags = ST_NONE;
 
 	if (yylloc.filename) {
-		sx->loc_file = strdup(yylloc.filename);
+		sx->loc_file = yylloc.filename;
 	} else {
 		sx->loc_file = NULL;
 	}
@@ -77,7 +77,6 @@ void st_drop(struct st *stx)
 	if (!stx) return;
 	free(stx->str);
 	free(stx->data);
-	free(stx->loc_file);
 	st_drop(stx->next);
 	st_drop(stx->args);
 	free(stx);
