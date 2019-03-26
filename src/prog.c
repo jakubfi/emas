@@ -821,6 +821,12 @@ int eval_op_short(struct st *t)
 			arg->val |= (arg->val & 0b0000000001000000) << 3;
 			arg->val &= 0b1111111110111111;
 			break;
+		case N_OP_BRC:
+			if (arg->val > 255) {
+				aaerror(t, "Upper byte for BRC argument is not 0");
+				return -1;
+			}
+			break;
 		case N_OP_BLC:
 			if (arg->val & 255) {
 				aaerror(t, "Lower byte for BLC argument is not 0");
