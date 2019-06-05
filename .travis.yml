@@ -11,6 +11,7 @@ before_install:
 - BUILD_DEP=$TRAVIS_BUILD_DIR/travis-utils/em-build-dep.sh
 - $BUILD_DEP emawp
 - $BUILD_DEP emelf
+- $BUILD_DEP emdas
 - cd $TRAVIS_BUILD_DIR/.. && git clone https://github.com/jakubfi/em400 em400
 
 script:
