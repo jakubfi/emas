@@ -11,6 +11,7 @@ before_install:
 - BUILD_DEP=$TRAVIS_BUILD_DIR/travis-utils/em-build-dep.sh
 - $BUILD_DEP emawp
 - $BUILD_DEP emelf
+- cd $TRAVIS_BUILD_DIR/.. && git clone https://github.com/jakubfi/em400 em400
 
 script:
 - INSTALL_DIR=$TRAVIS_BUILD_DIR/image
@@ -21,5 +22,6 @@ script:
 - cmake --build $BUILD_DIR -- -j2 VERBOSE=1
 - cmake --build $BUILD_DIR --target install -- -j2 VERBOSE=1
 - find $INSTALL_DIR -ls
+- tests/asmtest.sh
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2

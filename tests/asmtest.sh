@@ -11,6 +11,6 @@ for tests in $TESTDIRS ; do
 		$EMAS -Oraw -o /tmp/emas.bin -I $BASEDIR/include $file
 		$EMDAS -c mx16 -na -o /tmp/emas.asm /tmp/emas.bin
 		$EMAS -Oraw -c mx16 -o /tmp/emas2.bin /tmp/emas.asm
-		cmp /tmp/emas.bin /tmp/emas2.bin
+		cmp /tmp/emas.bin /tmp/emas2.bin || exit 1
 	done
 done
