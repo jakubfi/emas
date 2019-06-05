@@ -22,6 +22,6 @@ script:
 - cmake --build $BUILD_DIR -- -j2 VERBOSE=1
 - cmake --build $BUILD_DIR --target install -- -j2 VERBOSE=1
 - find $INSTALL_DIR -ls
-- tests/asmtest.sh
+- $TRAVIS_BUILD_DIR/tests/asmtest.sh
 
 # vim: tabstop=2 expandtab shiftwidth=2 softtabstop=2
