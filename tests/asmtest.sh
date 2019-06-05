@@ -1,7 +1,7 @@
 #!/bin/bash
 
 EMAS=build/emas
-EMDAS=../emdas/build/emdas
+EMDAS=emdas
 BASEDIR=../em400/tests
 TESTDIRS="alu args cycle int mem mod multix ops registers vendor"
 
