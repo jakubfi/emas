@@ -36,6 +36,8 @@ syn match emasIdentifier		"\.\?[a-z_][a-z0-9_]*"
 syn match emasLabel				"\.\?[a-z_][a-z0-9_]*:"
 syn match emasIdentifier		"[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*"
 
+syn region hashPreproc			start=/^\#define/ end=/[^\\]$/
+
 " opcodes
 syn keyword emasOpcode			LW TW LS RI RW PW RJ IS BB BM BS BC BN OU IN
 syn keyword emasOpcode			AD SD MW DW AF SF MF DF
@@ -113,6 +115,7 @@ if version >= 508 || !exists("did_emas_syntax_inits")
 	HiLink emasOpcode		Statement
 	HiLink emasDirective	Statement
 	HiLink emasPreproc		PreProc
+	HiLink hashPreproc		PreProc
 
 	HiLink emasString		String
 
