@@ -23,6 +23,8 @@
 #include "prog.h"
 #include "parser_utils.h"
 
+extern int str_len;
+
 int yylex(void);
 
 %}
@@ -212,8 +214,8 @@ pragma:
 	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
 	| P_DWORD exprs { $$ = compose_list(N_DWORD, $2); }
 	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
-	| P_ASCII STRING { $$ = st_str(N_ASCII, $2); free($2); }
-	| P_ASCIIZ STRING { $$ = st_str(N_ASCIIZ, $2); free($2); }
+	| P_ASCII STRING { $$ = st_strval(N_ASCII, $2, str_len); free($2); }
+	| P_ASCIIZ STRING { $$ = st_strval(N_ASCIIZ, $2, str_len); free($2); }
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }

@@ -438,8 +438,8 @@ int eval_string(struct st *t)
 	int chars, words;
 	int pos = 1; // start with left byte
 
-	chars = strlen(s);
-	if (t->type == N_ASCIIZ) chars++;
+	chars = t->val;
+	if (t->type == N_ASCII) chars--;
 	words = (chars+1) / 2;
 
 	if ((words < 0) || (words > 65536)) {

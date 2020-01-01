@@ -80,7 +80,8 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 
 <str>\" {
 	str_append('\0');
-	yylval.s = strdup(str_buf);
+	yylval.s = malloc(str_len);
+	yylval.s = memcpy(yylval.s, str_buf, str_len);
 	yy_pop_state();
 	return STRING;
 }

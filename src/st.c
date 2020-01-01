@@ -39,7 +39,12 @@ struct st * st_new(int type, int val, double flo, char *str, struct st *args)
 	sx->flo = flo;
 	sx->args = args;
 	if (str) {
-		sx->str = strdup(str);
+		if (val>0) {
+			sx->str = malloc(val);
+			sx->str = memcpy(sx->str, str, val);
+		} else {
+			sx->str = strdup(str);
+		}
 		if (!sx->str) {
 			free(sx);
 			return NULL;
@@ -98,6 +103,12 @@ struct st * st_float(int type, double flo)
 struct st * st_str(int type, char *str)
 {
 	return st_new(type, 0, 0, str, NULL);
+}
+
+// -----------------------------------------------------------------------
+struct st * st_strval(int type, char *str, int val)
+{
+	return st_new(type, val, 0, str, NULL);
 }
 
 // -----------------------------------------------------------------------

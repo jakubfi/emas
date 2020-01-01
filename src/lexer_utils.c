@@ -188,7 +188,7 @@ int str_append(char c)
 		llerror("string too long");
 		return 0;
 	}
-	*(str_buf+str_len++) = c;
+	str_buf[str_len++] = c;
 	return 1;
 }
 

@@ -52,6 +52,7 @@ void st_drop(struct st *stx);
 struct st * st_int(int type, int val);
 struct st * st_float(int type, double flo);
 struct st * st_str(int type, char *str);
+struct st * st_strval(int type, char *str, int val);
 struct st * st_arg(int type, ...);
 struct st * st_arg_app(struct st *stx, struct st *app_first);
 struct st * st_app(struct st *t1, struct st *t2);
