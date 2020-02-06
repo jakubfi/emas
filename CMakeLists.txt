@@ -47,8 +47,8 @@ add_executable(emas
 set_property(TARGET emas PROPERTY C_STANDARD 99)
 target_include_directories(emas PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(emas PRIVATE ${CMAKE_BINARY_DIR})
-target_include_directories(emas INTERFACE SYSTEM ${EMELF_INCLUDE_DIRS})
-target_include_directories(emas INTERFACE SYSTEM ${EMAWP_INCLUDE_DIRS})
+target_include_directories(emas PUBLIC SYSTEM ${EMELF_INCLUDE_DIRS})
+target_include_directories(emas PUBLIC SYSTEM ${EMAWP_INCLUDE_DIRS})
 target_compile_definitions(emas PRIVATE EMAS_VERSION="${APP_VERSION}")
 target_compile_options(emas PUBLIC -Wall)
 
