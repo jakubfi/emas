@@ -43,9 +43,9 @@ void llerror(char *s, ...)
 	lexer_err_reported = 1;
 	va_list ap;
 	va_start(ap, s);
-	printf("%s:%d:%d: ", loc_stack[loc_pos].filename, loc_stack[loc_pos].oline, loc_stack[loc_pos].ocol);
-	vprintf(s, ap);
-	printf("\n");
+	fprintf(stderr, "%s:%d:%d: ", loc_stack[loc_pos].filename, loc_stack[loc_pos].oline, loc_stack[loc_pos].ocol);
+	vfprintf(stderr, s, ap);
+	fprintf(stderr, "\n");
 	va_end(ap);
 }
 

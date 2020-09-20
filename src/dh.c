@@ -180,15 +180,15 @@ void dh_dump_stats(struct dh_table *dh)
 		if (depth > max_depth) max_depth = depth;
 	}
 
-	printf("-----------------------------------\n");
-	printf("      Slots: %d\n", dh->size);
-	printf("   Elements: %d\n", elem_total);
-	printf("  Max depth: %d\n", max_depth);
-	printf(" Collisions: %d\n", collisions);
-	printf("   Collided: \n");
+	fprintf(stderr, "-----------------------------------\n");
+	fprintf(stderr, "      Slots: %d\n", dh->size);
+	fprintf(stderr, "   Elements: %d\n", elem_total);
+	fprintf(stderr, "  Max depth: %d\n", max_depth);
+	fprintf(stderr, " Collisions: %d\n", collisions);
+	fprintf(stderr, "   Collided: \n");
 	for(i=0 ; i<dh->size ; i++) {
 		if (elem_slot[i] > 1) {
-			printf(" %10d: %d\n", i, elem_slot[i]-1);
+			fprintf(stderr, " %10d: %d\n", i, elem_slot[i]-1);
 		}
 	}
 

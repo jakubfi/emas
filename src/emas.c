@@ -45,16 +45,16 @@ int otype = O_RAW;
 // -----------------------------------------------------------------------
 void usage()
 {
-	printf("Usage: emas [options] [input]\n");
-	printf("Where options are one or more of:\n");
-	printf("   -o <output>    : set output file\n");
-	printf("   -c <cpu>       : set CPU type: mera400, mx16\n");
-	printf("   -O <otype>     : set output type: raw, debug, emelf, keys (defaults to raw)\n");
-	printf("   -I <dir>       : search for include files in <dir>\n");
-	printf("   -D <const>[=v] : define a constant and optionaly set its value (0 by default)\n");
-	printf("   -d             : print debug information to stderr (lots of)\n");
-	printf("   -v             : print version and exit\n");
-	printf("   -h             : print help and exit\n");
+	fprintf(stderr, "Usage: emas [options] [input]\n");
+	fprintf(stderr, "Where options are one or more of:\n");
+	fprintf(stderr, "   -o <output>    : set output file\n");
+	fprintf(stderr, "   -c <cpu>       : set CPU type: mera400, mx16\n");
+	fprintf(stderr, "   -O <otype>     : set output type: raw, debug, emelf, keys (defaults to raw)\n");
+	fprintf(stderr, "   -I <dir>       : search for include files in <dir>\n");
+	fprintf(stderr, "   -D <const>[=v] : define a constant and optionaly set its value (0 by default)\n");
+	fprintf(stderr, "   -d             : print debug information to stderr (lots of)\n");
+	fprintf(stderr, "   -v             : print version and exit\n");
+	fprintf(stderr, "   -h             : print help and exit\n");
 }
 
 // -----------------------------------------------------------------------
@@ -68,7 +68,7 @@ int parse_args(int argc, char **argv)
 		switch (option) {
 			case 'c':
 				if (prog_cpu(optarg, CPU_FORCED)) {
-					printf("Unknown cpu: '%s'.\n", optarg);
+					fprintf(stderr, "Unknown cpu: '%s'.\n", optarg);
 					return -1;
 				}
 				break;
@@ -93,7 +93,7 @@ int parse_args(int argc, char **argv)
 				} else if (!strcmp(optarg, "keys")) {
 					otype = O_KEYS;
 				} else {
-					printf("Unknown output type: '%s'.\n", optarg);
+					fprintf(stderr, "Unknown output type: '%s'.\n", optarg);
 					return -1;
 				}
 				break;
@@ -102,7 +102,7 @@ int parse_args(int argc, char **argv)
 				exit(0);
 				break;
 			case 'v':
-				printf("EMAS v%s - modern assembler for MERA-400 minicomputer system\n", EMAS_VERSION);
+				fprintf(stderr, "EMAS v%s - modern assembler for MERA-400 minicomputer system\n", EMAS_VERSION);
 				exit(0);
 				break;
 			case 'd':
@@ -121,7 +121,7 @@ int parse_args(int argc, char **argv)
 	} else if (optind == argc-1) {
 		input_file = argv[optind];
 	} else {
-		printf("Wrong usage.\n");
+		fprintf(stderr, "Wrong usage.\n");
 		return -1;
 	}
 
@@ -136,20 +136,20 @@ int main(int argc, char **argv)
 	FILE *outf = NULL;
 
 	if (kw_init() < 0) {
-		printf("Internal dictionary initialization failed.\n");
+		fprintf(stderr, "Internal dictionary initialization failed.\n");
 		goto cleanup;
 	}
 
 	sym = dh_create(16000, 1);
 	if (!sym) {
-		printf("Failed to create symbol table.\n");
+		fprintf(stderr, "Failed to create symbol table.\n");
 		goto cleanup;
 	}
 
 	res = parse_args(argc, argv);
 
 	if (res) {
-		printf("\n");
+		fprintf(stderr, "\n");
 		usage();
 		goto cleanup;
 	}
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!yyin) {
-		printf("Cannot open source file: '%s'\n", input_file);
+		fprintf(stderr, "Cannot open source file: '%s'\n", input_file);
 		goto cleanup;
 	}
 
@@ -180,24 +180,24 @@ int main(int argc, char **argv)
 	if (yyin) fclose(yyin);
 
 	if (!program) { // shouldn't happen - parser should always produce a program (even an empty one)
-		printf("Parse produced empty tree.\n");
+		fprintf(stderr, "Parse produced empty tree.\n");
 		goto cleanup;
 	}
 
 	res = assemble(program, 1);
 
 	if (res < 0) {
-		printf("%s\n", aerr);
+		fprintf(stderr, "%s\n", aerr);
 		goto cleanup;
 	} else if (res > 0) {
 		if (otype == O_EMELF) {
 			if (assemble(program, 1) < 0) {
-				printf("%s\n", aerr);
+				fprintf(stderr, "%s\n", aerr);
 				goto cleanup;
 			}
 		} else {
 			if (assemble(program, 0)) {
-				printf("%s\n", aerr);
+				fprintf(stderr, "%s\n", aerr);
 				goto cleanup;
 			}
 		}
@@ -224,12 +224,12 @@ int main(int argc, char **argv)
 				} else if (otype == O_RAW) {
 					output_file = strdup(basename);
 				} else {
-					printf("Unknown output file type.");
+					fprintf(stderr, "Unknown output file type.");
 					goto cleanup;
 				}
 
 				if (!strcmp(input_file, output_file)) {
-					printf("Input and output file names cannot be the same: '%s'\n", output_file);
+					fprintf(stderr, "Input and output file names cannot be the same: '%s'\n", output_file);
 					goto cleanup;
 				}
 			}
@@ -238,10 +238,14 @@ int main(int argc, char **argv)
 	}
 
 	if (outf != stdout) {
-		outf = fopen(output_file, "w");
-		if (!outf) {
-			printf("Cannot open output file '%s' for writing\n", output_file);
-			goto cleanup;
+		if ((otype == O_RAW) && !strcmp(output_file, "-")) {
+			outf = stdout;
+		} else {
+			outf = fopen(output_file, "w");
+			if (!outf) {
+				fprintf(stderr, "Cannot open output file '%s' for writing\n", output_file);
+				goto cleanup;
+			}
 		}
 	}
 
@@ -259,7 +263,7 @@ int main(int argc, char **argv)
 			res = writer_keys(program, outf);
 			break;
 		default:
-			printf("Unknown output type.\n");
+			fprintf(stderr, "Unknown output type.\n");
 			fclose(outf);
 			goto cleanup;
 	}
@@ -267,7 +271,7 @@ int main(int argc, char **argv)
 	fclose(outf);
 
 	if (res) {
-		printf("%s\n", aerr);
+		fprintf(stderr, "%s\n", aerr);
 		goto cleanup;
 	}
 	ret = 0;
