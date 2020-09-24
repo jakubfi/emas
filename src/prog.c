@@ -272,13 +272,12 @@ int eval_2arg(struct st *t)
 // -----------------------------------------------------------------------
 int eval_float(struct st *t)
 {
+	uint16_t regs[4]; // r0...r3, flags stored in r0
+	int res = awp_from_double(regs, t->flo);
 	if (!t->data) {
 		t->data = malloc(3 * sizeof(uint16_t));
 	}
-
-	uint16_t flags;
-
-	int res = awp_from_double(t->data+0, t->data+1, t->data+2, &flags, t->flo, 0);
+	memcpy(t->data, regs+1, 3 * sizeof(uint16_t));
 
 	// check for overflow/underflow
 	switch (res) {
