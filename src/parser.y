@@ -54,7 +54,7 @@ typedef struct YYLTYPE {
 	} \
 }
 
-%error-verbose
+%define parse.error verbose
 %locations
 
 %union {
