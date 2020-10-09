@@ -11,7 +11,7 @@ include(appversion.cmake)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 find_package(emelf REQUIRED)
-find_package(emawp 2.0 REQUIRED)
+find_package(emawp 3.0 REQUIRED)
 
 # ---- Sources -----------------------------------------------------------
 
