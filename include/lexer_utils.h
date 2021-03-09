@@ -34,10 +34,10 @@ struct loc {
 	int yylineno;
 };
 
-struct loc loc_stack[INCLUDE_MAX+1];
-int loc_pos;
-struct st *filenames;
-struct st *inc_paths;
+extern struct loc loc_stack[INCLUDE_MAX+1];
+extern int loc_pos;
+extern struct st *filenames;
+extern struct st *inc_paths;
 extern char *cur_label;
 
 extern char str_buf[STR_MAX+1];

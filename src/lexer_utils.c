@@ -36,6 +36,8 @@ int str_len;
 struct st *filenames;
 struct st *inc_paths;
 char *cur_label;
+struct loc loc_stack[INCLUDE_MAX+1];
+int loc_pos;
 
 // -----------------------------------------------------------------------
 void llerror(char *s, ...)
