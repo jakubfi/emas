@@ -29,7 +29,6 @@
 enum output_types {
 	O_DEBUG	= 1,
 	O_RAW	= 2,
-	O_EMELF	= 3,
 	O_KEYS	= 4,
 };
 
@@ -49,7 +48,7 @@ void usage()
 	fprintf(stderr, "Where options are one or more of:\n");
 	fprintf(stderr, "   -o <output>    : set output file\n");
 	fprintf(stderr, "   -c <cpu>       : set CPU type: mera400, mx16\n");
-	fprintf(stderr, "   -O <otype>     : set output type: raw, debug, emelf, keys (defaults to raw)\n");
+	fprintf(stderr, "   -O <otype>     : set output type: raw, debug, keys (defaults to raw)\n");
 	fprintf(stderr, "   -I <dir>       : search for include files in <dir>\n");
 	fprintf(stderr, "   -D <const>[=v] : define a constant and optionaly set its value (0 by default)\n");
 	fprintf(stderr, "   -d             : print debug information to stderr (lots of)\n");
@@ -88,8 +87,6 @@ int parse_args(int argc, char **argv)
 					otype = O_RAW;
 				} else if (!strcmp(optarg, "debug")) {
 					otype = O_DEBUG;
-				} else if (!strcmp(optarg, "emelf")) {
-					otype = O_EMELF;
 				} else if (!strcmp(optarg, "keys")) {
 					otype = O_KEYS;
 				} else {
@@ -190,16 +187,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s\n", aerr);
 		goto cleanup;
 	} else if (res > 0) {
-		if (otype == O_EMELF) {
-			if (assemble(program, 1) < 0) {
-				fprintf(stderr, "%s\n", aerr);
-				goto cleanup;
-			}
-		} else {
-			if (assemble(program, 0)) {
-				fprintf(stderr, "%s\n", aerr);
-				goto cleanup;
-			}
+		if (assemble(program, 0)) {
+			fprintf(stderr, "%s\n", aerr);
+			goto cleanup;
 		}
 	}
 
@@ -218,10 +208,7 @@ int main(int argc, char **argv)
 					*of_dot = '\0';
 				}
 
-				if (otype == O_EMELF) {
-					output_file = malloc(strlen(basename)+3);
-					sprintf(output_file, "%s.o", basename);
-				} else if (otype == O_RAW) {
+				if (otype == O_RAW) {
 					output_file = strdup(basename);
 				} else {
 					fprintf(stderr, "Unknown output file type.");
@@ -255,9 +242,6 @@ int main(int argc, char **argv)
 			break;
 		case O_DEBUG:
 			res = writer_debug(program, outf);
-			break;
-		case O_EMELF:
-			res = writer_emelf(program, sym, outf);
 			break;
 		case O_KEYS:
 			res = writer_keys(program, outf);

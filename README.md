@@ -12,7 +12,6 @@ To build and run emas you need:
 * cmake
 * GNU make
 * bison and flex
-* emelf library
 
 Build instructions
 ==========================================================================
