@@ -1,9 +1,6 @@
 BUGS:
 * "relative" arguments - is this even a thing? Shouldn't relativeness
   be decided by the instruction only?
-* byte addressing won't work after linking - there needs to be special
- linkage case (address needs to be relocated by 2*n)
-* during linking, norm args like '10' are not relocated
 
 TODO:
 
