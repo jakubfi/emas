@@ -23,6 +23,7 @@ BASEDIR=$1
 TESTDIRS="addr alu args cycle int mem mod multix ops registers vendor"
 
 for tests in $TESTDIRS ; do
+	echo "Using test directory: $tests"
 	files=$(ls -1 $BASEDIR/functional/$tests/*.asm 2>/dev/null)
 	if [ -z "$files" ] ; then
 		echo "Missing tests"
@@ -30,6 +31,7 @@ for tests in $TESTDIRS ; do
 	fi
 	for file in $files ; do
 		test_name=$(basename $file)
+		echo "Testing on: $test_name"
 		$EMAS -I ../asminc -Oraw -o /tmp/emas.bin -I $BASEDIR/include $file
 		$EMDAS -c mx16 -na -o /tmp/emas.asm /tmp/emas.bin
 		$EMAS -Oraw -c mx16 -o /tmp/emas2.bin /tmp/emas.asm
