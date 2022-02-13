@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ -z "$1" ] ; then
 	echo "Missing em400 tests directory"
 	echo "Usage: $0 <tests_directory>"
@@ -28,9 +30,9 @@ for tests in $TESTDIRS ; do
 	fi
 	for file in $files ; do
 		test_name=$(basename $file)
-		$EMAS -Iasminc -Oraw -o /tmp/emas.bin -I $BASEDIR/include $file
+		$EMAS -I ../asminc -Oraw -o /tmp/emas.bin -I $BASEDIR/include $file
 		$EMDAS -c mx16 -na -o /tmp/emas.asm /tmp/emas.bin
 		$EMAS -Oraw -c mx16 -o /tmp/emas2.bin /tmp/emas.asm
-		cmp /tmp/emas.bin /tmp/emas2.bin &>/dev/null || echo "$test_name: output differs"
+		cmp /tmp/emas.bin /tmp/emas2.bin
 	done
 done
