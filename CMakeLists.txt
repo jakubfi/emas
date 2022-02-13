@@ -49,6 +49,9 @@ add_executable(emas
 )
 
 target_link_libraries(emas emawp)
+if(WIN32)
+target_link_libraries(emas ws2_32)
+endif(WIN32)
 
 set_property(TARGET emas PROPERTY C_STANDARD 99)
 target_include_directories(emas PRIVATE ${CMAKE_SOURCE_DIR}/src)
