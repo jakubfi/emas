@@ -79,12 +79,14 @@ struct st * st_copy(struct st *t)
 // -----------------------------------------------------------------------
 void st_drop(struct st *stx)
 {
-	if (!stx) return;
-	free(stx->str);
-	free(stx->data);
-	st_drop(stx->next);
-	st_drop(stx->args);
-	free(stx);
+	while (stx) {
+		struct st *next = stx->next;
+		free(stx->str);
+		free(stx->data);
+		st_drop(stx->args);
+		free(stx);
+		stx = next;
+	}
 }
 
 // -----------------------------------------------------------------------
