@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  Linux-build:
+    name: build on ${{matrix.os}} with ${{matrix.compiler.compiler}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ ubuntu-20.04 ]
+        compiler:
+          - { compiler: GNU10, CC: gcc-10, CXX: g++-10, packages: gcc-10 g++-10 }
+          - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12 }
+    env:
+      BUILD_TYPE: Release
+      CC: ${{matrix.compiler.CC}}
+      CXX: ${{matrix.compiler.CXX}}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install packages for ${{matrix.compiler.compiler}}
+        run: sudo apt-get -y install ${{matrix.compiler.packages}}
+      - name: Build and install emawp
+        run: git clone https://github.com/jakubfi/emawp && cd emawp && mkdir build && cd build && cmake .. && make && sudo make install && sudo ldconfig
+      - name: Build and install emdas
+        run: git clone https://github.com/jakubfi/emdas && cd emdas && mkdir build && cd build && cmake .. && make && sudo make install && sudo ldconfig
+      - name: Configure project
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Install
+        run: sudo cmake --install ${{github.workspace}}/build
+      - name: Get em400 sources
+        run: git clone https://github.com/jakubfi/em400 ${{github.workspace}}/tests/em400
+      - name: Run tests
+        working-directory: ${{github.workspace}}/tests
+        run: ./asmtest.sh em400/tests
+
+  Win64-build:
+    if: ${{false}}
+    name: Win64 build
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler:
+          - { compiler: GNU, CC: gcc }
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      BUILD_TYPE: Release
+      CC: ${{matrix.compiler.CC}}
+      SRC_DIR: ${{github.workspace}}
+      BUILD_DIR: ${{github.workspace}}/build
+      INSTALL_PREFIX: /mingw64
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            base-devel
+            git
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+          update: true
+      - uses: actions/checkout@v2
+      - name: Initialize
+        run: ./.ci/ci-script.sh init
+      - name: Configure
+        run: ./.ci/ci-script.sh configure
+      - name: Build
+        run: ./.ci/ci-script.sh build
+      - name: Install
+        run: ./.ci/ci-script.sh install
+      - name: Test
+        run: ./.ci/ci-script.sh test
