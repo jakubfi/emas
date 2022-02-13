@@ -7,9 +7,9 @@ if [ -z "$1" ] ; then
 fi
 
 CURD=$(readlink -f .)
-EMAS=$(find $CURD -name emas -type f -executable)
+EMAS=$(find $CURD -type f -executable -name emas -or -name emas.exe)
 if [ -z "$EMAS" ] ; then
-	EMAS=$(find $CURD/.. -name emas -type f -executable)
+	EMAS=$(find $CURD/.. -type f -executable -name emas -or -name emas.exe)
 fi
 if [ -z "$EMAS" ] ; then
 	echo "emas binary not found in current or upper directory"
