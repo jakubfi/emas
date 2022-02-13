@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 		if ((otype == O_RAW) && !strcmp(output_file, "-")) {
 			outf = stdout;
 		} else {
-			outf = fopen(output_file, "w");
+			outf = fopen(output_file, "wb");
 			if (!outf) {
 				fprintf(stderr, "Cannot open output file '%s' for writing\n", output_file);
 				goto cleanup;
