@@ -42,7 +42,6 @@ jobs:
         run: ./asmtest.sh em400/tests
 
   Win64-build:
-    if: ${{false}}
     name: Win64 build
     runs-on: windows-latest
     strategy:
