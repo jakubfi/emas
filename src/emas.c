@@ -165,8 +165,16 @@ int main(int argc, char **argv)
 	}
 
 	inc_path_add(".");
+	inc_path_add(EMAS_ASM_INCLUDES);
 	inc_path_add("/usr/share/emas/include");
 	inc_path_add("/usr/local/share/emas/include");
+
+	AADEBUG("==== Include search dirs ==================");
+	struct st *i = inc_paths;
+	while (i) {
+		AADEBUG("%s", i->str);
+		i = i->next;
+	}
 
 	AADEBUG("==== Parse ================================");
 	if (yyparse()) {

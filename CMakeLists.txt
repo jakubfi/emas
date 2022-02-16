@@ -53,10 +53,13 @@ if(WIN32)
 target_link_libraries(emas ws2_32)
 endif(WIN32)
 
+set(EMAS_ASM_INCLUDES_DIR ${CMAKE_INSTALL_PREFIX}/share/emas/include)
+
 set_property(TARGET emas PROPERTY C_STANDARD 99)
 target_include_directories(emas PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_include_directories(emas PRIVATE ${CMAKE_BINARY_DIR})
 target_compile_definitions(emas PRIVATE EMAS_VERSION="${APP_VERSION}")
+target_compile_definitions(emas PRIVATE EMAS_ASM_INCLUDES="${EMAS_ASM_INCLUDES_DIR}")
 
 install(TARGETS emas RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
@@ -65,7 +68,7 @@ install(FILES
 	${PROJECT_SOURCE_DIR}/asminc/io.inc
 	${PROJECT_SOURCE_DIR}/asminc/mega.inc
 	${PROJECT_SOURCE_DIR}/asminc/multix.inc
-	DESTINATION ${CMAKE_INSTALL_DATADIR}/emas/include
+	DESTINATION ${EMAS_ASM_INCLUDES_DIR}
 	COMPONENT dev
 )
 
