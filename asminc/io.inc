@@ -73,6 +73,9 @@
 .const KZ_INT_CRC_ERROR		0b00001010 ; 8" floppy
 .const KZ_INT_SECTOR_DEFFECTIVE	0b00010010 ; 8" floppy
 
+.const KZ_INT_NUM 7	; interrupt number position in interrupt specification
+.const KZ_INT_DEV 10	; interrupt device position in interrupt specification
+
 ; memory configuration field locations
 
 .const MEM_CFG		1\15	; command is for memory module
