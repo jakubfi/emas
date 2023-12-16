@@ -36,7 +36,6 @@
 %x p_line
 %x p_file
 %s comment
-%s p_float
 
 nl		(\n)|(\r\n)|(\f)|(\v)
 ws		[ \t]+
@@ -64,9 +63,9 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
  /* ---- JUNK ------------------------------------------------------------ */
 
 {nl}
-<INITIAL,p_line,p_include,p_float>{ws}
-<INITIAL,p_line,p_include,p_float>{cmt}
-<INITIAL,p_line,p_include,p_float>"/*" { yy_push_state(comment); }
+<INITIAL,p_line,p_include>{ws}
+<INITIAL,p_line,p_include>{cmt}
+<INITIAL,p_line,p_include>"/*" { yy_push_state(comment); }
 <comment>"*"
 <comment>[^*]+
 <comment>"*/" { yy_pop_state(); }
@@ -178,9 +177,6 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 {oct} {
 	return lex_int(yytext, 1, 8, &(yylval.v));
 }
-<p_float>{dec} {
-	return lex_float(yytext, &(yylval.f));
-}
 {dec} {
 	return lex_int(yytext, 0, 10, &(yylval.v));
 }
@@ -237,9 +233,6 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 		case P_FILE:
 			yy_push_state(p_file);
 			break;
-		case P_FLOAT:
-			yy_push_state(p_float);
-			return p->type;
 		default:
 			return p->type;
 	}

@@ -47,7 +47,7 @@ struct eval_t eval_tab[] = {
 	{ "NONE",	eval_none },
 	{ "INT",	eval_none },
 	{ "BLOB",	eval_none },
-	{ "FLOAT",	eval_float },
+	{ "FLOAT",	eval_none },
 	{ "+",		eval_2arg },
 	{ "-",		eval_2arg },
 	{ "*",		eval_2arg },
@@ -125,6 +125,27 @@ void aaerror(struct st *t, char *format, ...)
 	}
 	AADEBUG("Error logged: %s", aerr);
 }
+
+// -----------------------------------------------------------------------
+struct st * int2float(struct st *t)
+{
+	if (t->type == N_INT) {
+		t->type = N_FLO;
+		t->flo = t->val;
+	}
+	return t;
+}
+
+// -----------------------------------------------------------------------
+struct st * float2int(struct st *t)
+{
+	if (t->type == N_FLO) {
+		t->type = N_INT;
+		t->val = t->flo;
+	}
+	return t;
+}
+
 // -----------------------------------------------------------------------
 int prog_cpu(char *cpu_name, int force)
 {
@@ -155,14 +176,8 @@ int prog_cpu(char *cpu_name, int force)
 }
 
 // -----------------------------------------------------------------------
-int eval_1arg(struct st *t)
+int eval_1arg_int(struct st *t, struct st *arg)
 {
-	int u;
-	struct st *arg = t->args;
-
-	u = eval(arg);
-	if (u) return u;
-
 /*	if ((t->type == N_NEG) && (arg->relative)) {
 		aaerror(t, "Invalid argument type for operator '%s': (%s)", eval_tab[t->type].name, arg->relative ? "relative" : "absolute");
 		return -1;
@@ -182,6 +197,47 @@ int eval_1arg(struct st *t)
 
 	t->type = N_INT;
 	t->flags |= arg->flags & ST_RELATIVE;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_1arg_float(struct st *t, struct st *arg)
+{
+	switch (t->type) {
+		case N_UMINUS:
+			t->flo = -arg->flo;
+			break;
+		default:
+			aaerror(t, "Illegal operator for float number: %s", eval_tab[t->type].name);
+			return -1;
+	}
+
+	t->type = N_FLO;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_1arg(struct st *t)
+{
+	int u;
+	struct st *arg = t->args;
+
+	u = eval(arg);
+	if (u) return u;
+
+	if (arg->type == N_INT) {
+		u = eval_1arg_int(t, arg);
+		if (u) return u;
+	} else if (arg->type == N_FLO) {
+		u = eval_1arg_float(t, arg);
+		if (u) return u;
+	} else {
+		assert(!"not int nor float for 1arg eval");
+		return -1;
+	}
+
 	st_drop(arg);
 	t->args = t->last = NULL;
 
@@ -189,20 +245,8 @@ int eval_1arg(struct st *t)
 }
 
 // -----------------------------------------------------------------------
-int eval_2arg(struct st *t)
+int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 {
-	int u1, u2;
-	struct st *arg1 = t->args;
-	struct st *arg2 = t->args->next;
-
-	u1 = eval(arg1);
-	if (u1 < 0) return u1;
-
-	u2 = eval(arg2);
-	if (u2 < 0) return u2;
-
-	if (u1 || u2) return 1;
-
 /*	if ((t->type != N_PLUS) && (t->type != N_MINUS) && ((arg1->relative) || (arg2->relative))) {
 		aaerror(t, "Invalid argument types for operator '%s': (%s, %s)",
 			eval_tab[t->type].name,
@@ -270,7 +314,74 @@ int eval_2arg(struct st *t)
 }
 
 // -----------------------------------------------------------------------
-int eval_float(struct st *t)
+int eval_2arg_float(struct st *t, struct st *arg1, struct st *arg2)
+{
+	if ((t->type == N_MINUS) && (arg1->flags & ST_RELATIVE) && (arg2->flags & ST_RELATIVE)) {
+		t->flags &= ~ST_RELATIVE;
+	} else {
+		t->flags |= (arg1->flags | arg2->flags) & ST_RELATIVE;
+	}
+
+	switch (t->type) {
+		case N_PLUS:
+			t->flo = arg1->flo + arg2->flo;
+			break;
+		case N_MINUS:
+			t->flo = arg1->flo - arg2->flo;
+			break;
+		case N_MUL:
+			t->flo = arg1->flo * arg2->flo;
+			break;
+		case N_DIV:
+			if (arg2->flo == 0.0) {
+				aaerror(t, "Division by 0");
+				return -1;
+			}
+			t->flo = arg1->flo / arg2->flo;
+			break;
+		default:
+			aaerror(t, "Illegal operator for float numbers: %s", eval_tab[t->type].name);
+			return -1;
+	}
+
+	t->type = N_FLO;
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int eval_2arg(struct st *t)
+{
+	int u1, u2;
+	struct st *arg1 = t->args;
+	struct st *arg2 = t->args->next;
+
+	u1 = eval(arg1);
+	if (u1 < 0) return u1;
+
+	u2 = eval(arg2);
+	if (u2 < 0) return u2;
+
+	if (u1 || u2) return 1;
+
+	if ((arg1->type == N_INT) && (arg2->type == N_INT)) {
+		u1 = eval_2arg_int(t, arg1, arg2);
+		if (u1) return u1;
+	} else if ((arg1->type == N_FLO) || (arg2->type == N_FLO)) {
+		u1 = eval_2arg_float(t, int2float(arg1), int2float(arg2));
+		if (u1) return u1;
+	} else {
+		assert(!"not int nor float for 2arg eval");
+		return -1;
+	}
+
+	st_drop(t->args);
+	t->args = t->last = NULL;
+	return 0;
+}
+
+// -----------------------------------------------------------------------
+int render_float(struct st *t)
 {
 	uint16_t regs[4]; // r0...r3, flags stored in r0
 	int res = awp_from_double(regs, t->flo);
@@ -300,9 +411,8 @@ int eval_word(struct st *t)
 	t->size = 1;
 
 	u = eval(t->args);
-	if (u) {
-		return u;
-	}
+	if (u) return u;
+	float2int(t->args);
 
 	switch (t->type) {
 		case N_WORD:
@@ -344,16 +454,17 @@ int eval_multiword(struct st *t)
 	}
 
 	u = eval(arg);
-	if (u) {
-		return u;
-	}
+	if (u) return u;
 
 	switch (t->type) {
 		case N_DWORD:
+			float2int(arg);
 			t->data[0] = arg->val >> 16;
 			t->data[1] = arg->val & 65535;
 			break;
 		case N_FLOAT:
+			u = render_float(int2float(arg));
+			if (u) return u;
 			t->data[0] = arg->data[0];
 			t->data[1] = arg->data[1];
 			t->data[2] = arg->data[2];
@@ -378,9 +489,8 @@ int eval_res(struct st *t)
 
 	// first, we need element count
 	u = eval(t->args);
-	if (u) {
-		return -1;
-	}
+	if (u) return -1;
+	float2int(t->args);
 
 	if ((t->args->val < 0) || (t->args->val > 65536)) {
 		aaerror(t, "Cannot reserve memory outside the process address space (requested %i words)", t->args->val);
@@ -392,9 +502,8 @@ int eval_res(struct st *t)
 	// then, check if user specified a value to fill with
 	if (t->args->next) {
 		u = eval(t->args->next);
-		if (u) {
-			return u;
-		}
+		if (u) return u;
+		float2int(t->args->next);
 		value = t->args->next->val;
 	}
 
@@ -414,9 +523,8 @@ int eval_res(struct st *t)
 int eval_org(struct st *t)
 {
 	int u = eval(t->args);
-	if (u) {
-		return -1;
-	}
+	if (u) return -1;
+	float2int(t->args);
 
 	if (t->args->val < ic) {
 		aaerror(t, "Cannot move location pointer backwards by %i words", t->args->val - ic);
@@ -507,9 +615,8 @@ int eval_equ(struct st *t)
 	struct dh_elem *s;
 
 	u = eval(t->args);
-	if (u < 0) {
-		return u;
-	}
+	if (u < 0) return u;
+	float2int(t->args);
 
 	s = dh_get(sym, t->str);
 
@@ -539,9 +646,8 @@ int eval_const(struct st *t)
 	struct dh_elem *s;
 
 	u = eval(t->args);
-	if (u < 0) {
-		return u;
-	}
+	if (u < 0) return u;
+	float2int(t->args);
 
 	s = dh_get(sym, t->str);
 
@@ -739,9 +845,8 @@ int eval_as_short(struct st *t, int type, int op)
 	int opl, rel_op = 0;
 
 	int u = eval(t);
-	if (u) {
-		return u;
-	}
+	if (u) return u;
+	float2int(t);
 
 	switch (type) {
 		case N_OP_SHC:
@@ -798,9 +903,7 @@ int eval_op_short(struct st *t)
 	t->size = 1;
 
 	u = eval_as_short(arg, t->type, t->val);
-	if (u) {
-		return u;
-	}
+	if (u) return u;
 
 	switch (t->type) {
 		case N_OP_SHC:

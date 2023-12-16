@@ -135,7 +135,6 @@ typedef struct YYLTYPE {
 
 %type <t> line lines op pragma
 %type <t> norm normval expr exprs
-%type <t> float floats
 %type <t> struct_field struct_fields
 
 %destructor { st_drop($$); } <t>
@@ -213,7 +212,7 @@ pragma:
 	| P_CONST NAME expr { $$ = st_str(N_CONST, $2); st_arg_app($$, $3); free($2); }
 	| P_WORD exprs { $$ = compose_list(N_WORD, $2); }
 	| P_DWORD exprs { $$ = compose_list(N_DWORD, $2); }
-	| P_FLOAT floats { $$ = compose_list(N_FLOAT, $2); }
+	| P_FLOAT exprs { $$ = compose_list(N_FLOAT, $2); }
 	| P_ASCII STRING { $$ = st_strval(N_ASCII, $2, str_len); free($2); }
 	| P_ASCIIZ STRING { $$ = st_strval(N_ASCIIZ, $2, str_len); free($2); }
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
@@ -242,6 +241,7 @@ struct_field:
 
 expr:
 	INT { $$ = st_int(N_INT, $1); }
+	| FLOAT { $$ = st_float(N_FLO, $1); }
 	| NAME { $$ = st_str(N_NAME, $1); free($1); }
 	| CURLOC { $$ = st_int(N_CURLOC, 0); }
 	| '(' expr ')' { $$ = $2; }
@@ -250,14 +250,14 @@ expr:
 	| expr '*' expr { $$ = st_arg(N_MUL, $1, $3, NULL); }
 	| expr '/' expr { $$ = st_arg(N_DIV, $1, $3, NULL); }
 	| expr '%' expr { $$ = st_arg(N_REM, $1, $3, NULL); }
-	| '-' expr %prec UMINUS { $$ = st_arg(N_UMINUS, $2, NULL); }
+	| '-' expr %prec UMINUS { $$ = st_arg(N_UMINUS, $2, NULL, NULL); }
 	| expr '\\' expr { $$ = st_arg(N_SCALE, $1, $3, NULL); }
 	| expr LSHIFT expr { $$ = st_arg(N_LSHIFT, $1, $3, NULL); }
 	| expr RSHIFT expr { $$ = st_arg(N_RSHIFT, $1, $3, NULL); }
 	| expr '&' expr { $$ = st_arg(N_AND, $1, $3, NULL); }
 	| expr '|' expr { $$ = st_arg(N_OR, $1, $3, NULL); }
 	| expr '^' expr { $$ = st_arg(N_XOR, $1, $3, NULL); }
-	| '~' expr { $$ = st_arg(N_NEG, $2, NULL); }
+	| '~' expr { $$ = st_arg(N_NEG, $2, NULL, NULL); }
 	;
 
 exprs:
@@ -265,17 +265,6 @@ exprs:
 	| expr ',' exprs { $$ = st_app($1, $3); }
 	;
 
-/* ---- STORAGE ---------------------------------------------------------- */
-
-float:
-	FLOAT { $$ = st_float(N_FLO, $1); }
-	| '-' FLOAT { $$ = st_float(N_FLO, -$2); }
-	;
-
-floats:
-	float
-	| float ',' floats { $$ = st_app($1, $3); }
-	;
 %%
 
 
