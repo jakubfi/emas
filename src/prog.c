@@ -604,7 +604,6 @@ int eval_equ(struct st *t)
 
 	u = eval(t->args);
 	if (u < 0) return u;
-	float2int(t->args);
 
 	s = dh_get(sym, t->str);
 
@@ -635,7 +634,6 @@ int eval_const(struct st *t)
 
 	u = eval(t->args);
 	if (u < 0) return u;
-	float2int(t->args);
 
 	s = dh_get(sym, t->str);
 
@@ -808,9 +806,10 @@ int eval_name(struct st *t)
 	}
 	s->being_evaluated--;
 
+	t->type = s->t->type;
 	t->val = s->t->val;
+	t->flo = s->t->flo;
 	t->flags |= s->t->flags & ST_RELATIVE;
-	t->type = N_INT;
 
 	return 0;
 }
