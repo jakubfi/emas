@@ -37,9 +37,12 @@ jobs:
         run: sudo cmake --install ${{github.workspace}}/build
       - name: Get em400 sources
         run: git clone https://github.com/jakubfi/em400 ${{github.workspace}}/tests/em400
-      - name: Run tests
+      - name: Basic Assembly Tests
         working-directory: ${{github.workspace}}/tests
         run: ./asmtest.sh em400/tests
+      - name: Acceptance Tests
+        working-directory: ${{github.workspace}}/tests
+        run: ./run_test.sh
 
   Win64-build:
     name: Win64 build
