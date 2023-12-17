@@ -178,11 +178,6 @@ int prog_cpu(char *cpu_name, int force)
 // -----------------------------------------------------------------------
 int eval_1arg_int(struct st *t, struct st *arg)
 {
-/*	if ((t->type == N_NEG) && (arg->relative)) {
-		aaerror(t, "Invalid argument type for operator '%s': (%s)", eval_tab[t->type].name, arg->relative ? "relative" : "absolute");
-		return -1;
-	}
-*/
 	switch (t->type) {
 		case N_UMINUS:
 			t->val = -arg->val;
@@ -247,13 +242,7 @@ int eval_1arg(struct st *t)
 // -----------------------------------------------------------------------
 int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 {
-/*	if ((t->type != N_PLUS) && (t->type != N_MINUS) && ((arg1->relative) || (arg2->relative))) {
-		aaerror(t, "Invalid argument types for operator '%s': (%s, %s)",
-			eval_tab[t->type].name,
-			arg1->relative ? "relative" : "absolute",
-			arg2->relative ? "relative" : "absolute");
-		return -1;
-	} else */if ((t->type == N_MINUS) && (arg1->flags & ST_RELATIVE) && (arg2->flags & ST_RELATIVE)) {
+	if ((t->type == N_MINUS) && (arg1->flags & ST_RELATIVE) && (arg2->flags & ST_RELATIVE)) {
 		t->flags &= ~ST_RELATIVE;
 	} else {
 		t->flags |= (arg1->flags | arg2->flags) & ST_RELATIVE;
