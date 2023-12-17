@@ -40,6 +40,10 @@ case $ACTION in
 		git clone https://github.com/jakubfi/em400
 		./asmtest.sh em400/tests
 	;;
+	acceptance)
+		cd "$SRC_DIR"/tests
+		./run_test.sh
+	;;
 
 	*)
 		echo "Unknown action: $ACTION"
