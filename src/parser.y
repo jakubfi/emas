@@ -199,14 +199,13 @@ pragma:
 	P_CPU NAME {
 		$$ = NULL;
 		int res = prog_cpu($2, 0);
-		free($2);
 		if (res > 0) {
 			yyerror("Unknown CPU type '%s'.", $2);
-			YYABORT;
 		} else if (res < 0) {
 			yyerror("CPU type already set.");
-			YYABORT;
 		}
+		free($2);
+		if (res) YYABORT;
 	}
 	| P_EQU NAME expr { $$ = st_str(N_EQU, $2); st_arg_app($$, $3); free($2); }
 	| P_CONST NAME expr { $$ = st_str(N_CONST, $2); st_arg_app($$, $3); free($2); }
