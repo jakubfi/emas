@@ -87,7 +87,6 @@ int writer_debug(struct st *prog, FILE *f)
 				}
 				break;
 			case N_NONE:
-				fprintf(f, "@ 0x%04x : (none, type %d)\n", t->ic, t->type);
 				break;
 			default:
 				fprintf(f, "@ 0x%04x : unresolved\n", t->ic);
@@ -137,8 +136,10 @@ int writer_keys(struct st *prog, FILE *f)
 					keys_print(f, t->ic+i, t->data[i]);
 				}
 				break;
+			case N_NONE:
+				break;
 			default:
-				//fprintf(f, "@ 0x%04x : unresolved\n", t->ic);
+				fprintf(f, "@ 0x%04x : unresolved\n", t->ic);
 				break;
 		}
 		t = t->next;
