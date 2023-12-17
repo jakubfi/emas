@@ -189,6 +189,8 @@ int eval_1arg_int(struct st *t, struct st *arg)
 			return -1;
 	}
 
+	AADEBUG("%s %i = %i", eval_tab[t->type].name, arg->val, t->val);
+
 	t->type = N_INT;
 	t->flags |= arg->flags & ST_RELATIVE;
 
@@ -206,6 +208,8 @@ int eval_1arg_float(struct st *t, struct st *arg)
 			aaerror(t, "Illegal operator for float number: %s", eval_tab[t->type].name);
 			return -1;
 	}
+
+	AADEBUG("%s %f = %f", eval_tab[t->type].name, arg->flo, t->flo);
 
 	t->type = N_FLO;
 
@@ -298,6 +302,8 @@ int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
+	AADEBUG("%i %s %i = %i", arg1->val, eval_tab[t->type].name, arg2->val, t->val);
+
 	return 0;
 }
 
@@ -331,6 +337,8 @@ int eval_2arg_float(struct st *t, struct st *arg1, struct st *arg2)
 			aaerror(t, "Illegal operator for float numbers: %s", eval_tab[t->type].name);
 			return -1;
 	}
+
+	AADEBUG("%f %s %f = %f", arg1->flo, eval_tab[t->type].name, arg2->flo, t->flo);
 
 	t->type = N_FLO;
 
