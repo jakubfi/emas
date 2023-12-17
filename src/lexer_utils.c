@@ -172,14 +172,24 @@ void delchar(char *str, char c)
 int lex_int(char *str, int offset, int base, int *val)
 {
 	delchar(str+offset, '_');
+	errno = 0;
 	*val = strtol(str+offset, NULL, base);
+	if (errno) {
+		llerror(strerror(errno));
+		return 0;
+	}
 	return INT;
 }
 
 // -----------------------------------------------------------------------
 int lex_float(char *str, double *val)
 {
+	errno = 0;
 	*val = strtod(str, NULL);
+	if (errno) {
+		llerror(strerror(errno));
+		return 0;
+	}
 	return FLOAT;
 }
 
