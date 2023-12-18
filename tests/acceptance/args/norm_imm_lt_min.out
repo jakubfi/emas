@@ -1,0 +1,1 @@
+acceptance/args/norm_imm_lt_min.asm:1:14: Value -32769 is not an 16-bit signed/unsigned integer

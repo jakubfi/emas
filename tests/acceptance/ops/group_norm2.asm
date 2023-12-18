@@ -1,0 +1,16 @@
+AW r0, r0
+AC r0, r0
+SW r0, r0
+CW r0, r0
+OR r0, r0
+OM r0, r0
+NR r0, r0
+NM r0, r0
+ER r0, r0
+EM r0, r0
+XR r0, r0
+XM r0, r0
+CL r0, r0
+LB r0, r0
+RB r0, r0
+CB r0, r0

@@ -1,0 +1,4 @@
+.cpu mx16
+CRON
+SINT
+SIND

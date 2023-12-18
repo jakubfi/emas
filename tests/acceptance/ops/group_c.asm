@@ -1,0 +1,21 @@
+RIC r0
+ZLB r0
+SXU r0
+NGA r0
+SLZ r0
+SLY r0
+SLX r0
+SRY r0
+NGL r0
+RPC r0
+SHC r0, 0
+RKY r0
+ZRB r0
+SXL r0
+NGC r0
+SVZ r0
+SVY r0
+SVX r0
+SRX r0
+SRZ r0
+LPC r0

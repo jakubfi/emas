@@ -1,0 +1,15 @@
+LW r0, r0
+TW r0, r0
+LS r0, r0
+RI r0, r0
+RW r0, r0
+PW r0, r0
+RJ r0, r0
+IS r0, r0
+BB r0, r0
+BM r0, r0
+BS r0, r0
+BC r0, r0
+BN r0, r0
+OU r0, r0
+IN r0, r0

@@ -1,0 +1,1 @@
+acceptance/args/short_lt_min.asm:1:6: Argument value -64 for INT is out of range (-63..63)

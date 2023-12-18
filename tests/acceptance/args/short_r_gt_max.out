@@ -1,0 +1,1 @@
+acceptance/args/short_r_gt_max.asm:1:9: Argument value 64 for INT is out of range (-63..63)
