@@ -1,0 +1,1 @@
+acceptance/args/hlt_lt_min.asm:1:6: Argument value -1 for INT is out of range (0..127)

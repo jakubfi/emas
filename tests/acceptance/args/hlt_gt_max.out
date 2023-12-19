@@ -1,0 +1,1 @@
+acceptance/args/hlt_gt_max.asm:1:5: Argument value 128 for INT is out of range (0..127)

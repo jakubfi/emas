@@ -1,0 +1,1 @@
+acceptance/args/blc_low_bits.asm:1:11: BLC argument may only have left byte bits set
