@@ -863,6 +863,7 @@ int eval_as_short(struct st *t, int type, int op)
 		case N_OP_EXL:
 		case N_OP_NRF:
 			min = 0; max = 255;
+			break;
 		default:
 			min = -32768; max = 65535;
 			break;
@@ -916,15 +917,10 @@ int eval_op_short(struct st *t)
 			arg->val |= (arg->val & 0b0000000001000000) << 3;
 			arg->val &= 0b1111111110111111;
 			break;
-		case N_OP_BRC:
-			if (arg->val > 255) {
-				aaerror(t, "Upper byte for BRC argument is not 0");
-				return -1;
-			}
-			break;
+		// TODO: BRC/BLC arguments need to be rethinked
 		case N_OP_BLC:
-			if (arg->val & 255) {
-				aaerror(t, "Lower byte for BLC argument is not 0");
+			if (arg->val & ~0xff00) {
+				aaerror(t, "BLC argument may only have left byte bits set");
 				return -1;
 			}
 			arg->val = arg->val >> 8;
