@@ -854,7 +854,7 @@ int eval_as_short(struct st *t, int type, int op)
 			// relative argument with instruction that use relative addresses?
 			// IRB, DRB, LWS, RWS use adresses relative to IC
 			opl = (op >> 10) & 0b111;
-			rel_op = ((opl == 0b010) || (opl == 0b011) || (opl == 0b110) || (opl == 0b111)) ? 1 : 0;
+			rel_op = (opl == 0b010) || (opl == 0b011) || (opl == 0b110) || (opl == 0b111);
 			break;
 		case N_OP_HLT:
 			min = 0; max = 127;
@@ -871,6 +871,7 @@ int eval_as_short(struct st *t, int type, int op)
 
 	if (rel_op && (t->flags & ST_RELATIVE)) {
 		int diff = t->val - (ic+1);
+		// TODO: U WUT M8?
 		if (diff >= 65535 - 63) {
 			t->val = diff - 65536;
 		} else if (diff <= -65535 + 63) {
