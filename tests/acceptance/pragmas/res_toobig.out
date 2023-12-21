@@ -1,0 +1,1 @@
+acceptance/pragmas/res_toobig.asm:1:11: Cannot reserve memory outside the process address space (requested 65537 words)

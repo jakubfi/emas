@@ -1,0 +1,1 @@
+acceptance/pragmas/res_negative.asm:1:8: Cannot reserve memory outside the process address space (requested -1 words)

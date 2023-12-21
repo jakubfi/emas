@@ -1,0 +1,5 @@
+.ascii "a"
+.ascii "b"
+.ascii "cc"
+.ascii "ddd"
+.ascii "eeee"
