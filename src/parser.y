@@ -32,6 +32,8 @@ int yylex(void);
 
 %code requires {
 
+#include <inttypes.h>
+
 typedef struct YYLTYPE {
 	int first_line;
 	int first_column;
