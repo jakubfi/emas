@@ -175,7 +175,8 @@ int lex_int(char *str, int offset, int base, int64_t *val)
 	errno = 0;
 	*val = strtoll(str+offset, NULL, base);
 	if (errno) {
-		llerror(strerror(errno));
+		// can't use strerror() - tests fail with different strings on Win64
+		llerror("Integer conversion error");
 		return 0;
 	}
 	return INT;
@@ -187,7 +188,8 @@ int lex_float(char *str, double *val)
 	errno = 0;
 	*val = strtod(str, NULL);
 	if (errno) {
-		llerror(strerror(errno));
+		// can't use strerror() - tests fail with different strings on Win64
+		llerror("Float conversion error");
 		return 0;
 	}
 	return FLOAT;

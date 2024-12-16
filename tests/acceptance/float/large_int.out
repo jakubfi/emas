@@ -1,1 +1,1 @@
-acceptance/float/large_int.asm:1:8: Numerical result out of range
+acceptance/float/large_int.asm:1:8: Integer conversion error
