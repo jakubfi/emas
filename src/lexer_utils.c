@@ -169,11 +169,11 @@ void delchar(char *str, char c)
 }
 
 // -----------------------------------------------------------------------
-int lex_int(char *str, int offset, int base, int *val)
+int lex_int(char *str, int offset, int base, int64_t *val)
 {
 	delchar(str+offset, '_');
 	errno = 0;
-	*val = strtol(str+offset, NULL, base);
+	*val = strtoll(str+offset, NULL, base);
 	if (errno) {
 		llerror(strerror(errno));
 		return 0;

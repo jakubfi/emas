@@ -76,7 +76,7 @@ int writer_debug(struct st *prog, FILE *f)
 		switch (t->type) {
 			case N_INT:
 				bin = int2binf("... ... . ... ... ...", t->val, 16);
-				fprintf(f, "@ 0x%04x : 0x%04x  /  %s  /  %i\n", t->ic, (uint16_t) t->val, bin, t->val);
+				fprintf(f, "@ 0x%04x : 0x%04x  /  %s  /  %lli\n", t->ic, (uint16_t) t->val, bin, (long long int) t->val);
 				free(bin);
 				break;
 			case N_BLOB:

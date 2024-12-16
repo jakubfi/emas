@@ -25,7 +25,7 @@
 extern int ic;
 
 // -----------------------------------------------------------------------
-struct st * st_new(int type, int val, double flo, char *str, struct st *args)
+struct st * st_new(int type, int64_t val, double flo, char *str, struct st *args)
 {
 	struct st *sx;
 
@@ -90,7 +90,7 @@ void st_drop(struct st *stx)
 }
 
 // -----------------------------------------------------------------------
-struct st * st_int(int type, int val)
+struct st * st_int(int type, int64_t val)
 {
 	return st_new(type, val, 0, NULL, NULL);
 }

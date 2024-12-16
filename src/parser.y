@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "st.h"
 #include "prog.h"
@@ -58,7 +59,7 @@ typedef struct YYLTYPE {
 %locations
 
 %union {
-	int v;
+	int64_t v;
 	char *s;
 	double f;
 	struct st *t;

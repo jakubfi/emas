@@ -24,7 +24,7 @@ struct st {
 	int type;			// Node type (not token type!)
 						// Node may hold:
 	char *str;			//  * string
-	int val;			//  * integer value
+	int64_t val;		//  * integer value
 	double flo;			//  * floating point value
 	uint16_t *data;		//  * unsigned 16-bit blob (rendered only during evaluation)
 						//  * list of arguments:
@@ -49,7 +49,7 @@ enum st_flags {
 
 struct st * st_copy(struct st *t);
 void st_drop(struct st *stx);
-struct st * st_int(int type, int val);
+struct st * st_int(int type, int64_t val);
 struct st * st_float(int type, double flo);
 struct st * st_str(int type, char *str);
 struct st * st_strval(int type, char *str, int val);

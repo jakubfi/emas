@@ -19,6 +19,7 @@
 #define LEXER_UTILS_H
 
 #include <stdio.h>
+#include <inttypes.h>
 
 extern int yylineno;
 
@@ -46,7 +47,7 @@ extern int str_len;
 void llerror(char *s, ...);
 int unesc_char(char *c, int *esclen);
 int flag2mask(char c);
-int lex_int(char *str, int offset, int base, int *val);
+int lex_int(char *str, int offset, int base, int64_t *val);
 int lex_float(char *str, double *val);
 int str_append(char c);
 void loc_update(int len);

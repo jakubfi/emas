@@ -23,6 +23,7 @@
 #include <strings.h>
 #include <math.h>
 #include <inttypes.h>
+#include <limits.h>
 
 #include <emawp.h>
 
@@ -189,7 +190,7 @@ int eval_1arg_int(struct st *t, struct st *arg)
 			return -1;
 	}
 
-	AADEBUG("%s %i = %i", eval_tab[t->type].name, arg->val, t->val);
+	AADEBUG("%s %lli = %lli", eval_tab[t->type].name, (long long) arg->val, (long long) t->val);
 
 	t->type = N_INT;
 	t->flags |= arg->flags & ST_RELATIVE;
@@ -302,7 +303,7 @@ int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
-	AADEBUG("%i %s %i = %i", arg1->val, eval_tab[t->type].name, arg2->val, t->val);
+	AADEBUG("%lli %s %lli = %lli", (long long) arg1->val, eval_tab[t->type].name, (long long) arg2->val, (long long) t->val);
 
 	return 0;
 }
@@ -412,8 +413,8 @@ int eval_word(struct st *t)
 
 	switch (t->type) {
 		case N_WORD:
-			if ((t->args->val < -32768) || (t->args->val > 65535)) {
-				aaerror(t, "Value %i is not an 16-bit signed/unsigned integer", t->args->val);
+			if ((t->args->val < SHRT_MIN) || (t->args->val > USHRT_MAX)) {
+				aaerror(t, "Value %lli is not an 16-bit signed/unsigned integer", (long long) t->args->val);
 				return -1;
 			}
 			t->val = t->args->val;
@@ -435,9 +436,15 @@ int eval_multiword(struct st *t)
 	struct st *arg = t->args;
 
 	switch (t->type) {
-		case N_DWORD: t->size = 2; break;
-		case N_FLOAT: t->size = 3; break;
-		default: assert(!"not a multiword"); break;
+		case N_DWORD:
+			t->size = 2;
+			break;
+		case N_FLOAT:
+			t->size = 3;
+			break;
+		default:
+			assert(!"not a multiword");
+			break;
 	}
 
 	if ((t->size < 0) || (t->size > 65536)) {
@@ -455,6 +462,10 @@ int eval_multiword(struct st *t)
 	switch (t->type) {
 		case N_DWORD:
 			float2int(arg);
+			if ((arg->val < INT_MIN) || (arg->val > UINT_MAX)) {
+				aaerror(t, "Value won't fit in a DWORD: %lli", (long long) arg->val);
+				return -1;
+			}
 			t->data[0] = arg->val >> 16;
 			t->data[1] = arg->val & 65535;
 			break;
@@ -489,7 +500,7 @@ int eval_res(struct st *t)
 	float2int(t->args);
 
 	if ((t->args->val < 0) || (t->args->val > 65536)) {
-		aaerror(t, "Cannot reserve memory outside the process address space (requested %i words)", t->args->val);
+		aaerror(t, "Cannot reserve memory outside the process address space (requested %lli words)", (long long) t->args->val);
 		return -1;
 	}
 
@@ -523,7 +534,7 @@ int eval_org(struct st *t)
 	float2int(t->args);
 
 	if (t->args->val < ic) {
-		aaerror(t, "Cannot move location pointer backwards by %i words", t->args->val - ic);
+		aaerror(t, "Cannot move location pointer backwards by %lli words", (long long) t->args->val - ic);
 		return -1;
 	}
 	ic = t->args->val;
@@ -865,7 +876,7 @@ int eval_as_short(struct st *t, int type, int op)
 			min = 0; max = 255;
 			break;
 		default:
-			min = -32768; max = 65535;
+			min = SHRT_MIN; max = USHRT_MAX;
 			break;
 	}
 
@@ -882,7 +893,7 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if ((t->val < min) || (t->val > max)) {
-		aaerror(t, "Argument value %i for %s is out of range (%i..%i)", t->val, eval_tab[t->type].name, min, max);
+		aaerror(t, "Argument value %lli for %s is out of range (%i..%i)", (long long) t->val, eval_tab[t->type].name, min, max);
 		return -1;
 	}
 

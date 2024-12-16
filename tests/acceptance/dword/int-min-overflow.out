@@ -1,0 +1,1 @@
+acceptance/dword/int-min-overflow.asm:1:19: Value won't fit in a DWORD: -2147483649
