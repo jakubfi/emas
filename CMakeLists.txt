@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 project(emas 
 	DESCRIPTION "MERA-400 assembler with modern syntax"
 	LANGUAGES C
