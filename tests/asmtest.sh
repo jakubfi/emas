@@ -21,7 +21,7 @@ fi
 
 EMDAS=$(which emdas)
 BASEDIR=$1
-TESTDIRS="addr alu args barnb cycle int mem mod multix ops registers vendor"
+TESTDIRS="addr alu args barnb cchar cycle int mem mod multix ops registers vendor"
 
 echo "Testing assembly with: $EMAS"
 if [ -n "$EMDAS" ] ; then
