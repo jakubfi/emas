@@ -124,17 +124,19 @@ typedef struct YYLTYPE {
 %token '[' ']' ',' '(' ')'
 
 %token CURLOC "."
+%token LSHIFT "<<"
+%token RSHIFT ">>"
 
 %left '|'
 %left '^'
 %left '&'
-%left RSHIFT "<<"
-%left LSHIFT ">>"
+%left RSHIFT
+%left LSHIFT
 %left '+' '-'
 %left '*' '/' '%'
 %left '\\'
-%right '~'
-%nonassoc UMINUS "unary minus"
+%precedence '~'
+%precedence UMINUS
 
 %type <t> line lines op pragma
 %type <t> norm normval expr exprs
@@ -152,7 +154,7 @@ program:
 	;
 
 lines:
-	/* empty */ { $$ = st_int(N_PROG, 0); }
+	%empty { $$ = st_int(N_PROG, 0); }
 	| lines line { $$ = st_arg_app($1, $2); }
 	;
 
