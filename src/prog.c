@@ -41,7 +41,6 @@ int aadebug;
 
 int ic;
 int cpu = CPU_DEFAULT;
-int ic_max = 32767;
 
 struct eval_t eval_tab[] = {
 	[N_NONE]	=	{ "NONE",	eval_none },
@@ -164,10 +163,8 @@ int prog_cpu(char *cpu_name, int force)
 	// first time setting cpu type
 	if (!strcasecmp(cpu_name, "mera400")) {
 		cpu = CPU_MERA400 | force;
-		ic_max = 32767;
 	} else if (!strcasecmp(cpu_name, "mx16")) {
 		cpu = CPU_MX16 | force;
-		ic_max = 65535;
 	} else { // unknown CPU type
 		return 1;
 	}
@@ -1005,8 +1002,8 @@ int assemble(struct st *prog, int keep_going)
 	ic = 0;
 
 	while (t) {
-		if (ic > ic_max) {
-			aaerror(t, "Program too large (>%i words)", ic_max+1);
+		if (ic > 0xffff) {
+			aaerror(t, "Program too large (>65536 words)");
 			return -1;
 		}
 		if (t->ic < 0) {
