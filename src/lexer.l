@@ -35,7 +35,7 @@
 %x p_include
 %x p_line
 %x p_file
-%s comment
+%x comment
 
 nl		(\n)|(\r\n)|(\f)|(\v)
 ws		[ \t]+
@@ -48,8 +48,8 @@ e_chr	\\.
 bin		0b_*[01][01_]*
 oct		0_*[0-7][0-7_]*
 hex		0x_*[0-9a-fA-F][0-9a-fA-F_]*
-dec		_*[0-9][0-9_]*
-float	[0-9]+(\.[0-9]+)?([eE]-?[0-9]+)?
+dec		[0-9][0-9_]*
+float	[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?
 flags	\?[a-zA-Z0-9]+
 
 reg		(?i:r)[0-9]+
@@ -80,7 +80,7 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 <str>\" {
 	str_append('\0');
 	yylval.s = malloc(str_len);
-	yylval.s = memcpy(yylval.s, str_buf, str_len);
+	memcpy(yylval.s, str_buf, str_len);
 	yy_pop_state();
 	return STRING;
 }
@@ -102,9 +102,10 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	}
 }
 
-<str>[^"][ \t]*$ {
+<str>\n {
 	llerror("Unterminated string");
 	yy_pop_state();
+	yylineno++;
 	return INVALID_STRING;
 }
 
