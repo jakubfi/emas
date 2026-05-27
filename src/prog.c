@@ -136,13 +136,13 @@ struct st * int2float(struct st *t)
 }
 
 // -----------------------------------------------------------------------
-struct st * float2int(struct st *t)
+int require_int(struct st *t, const char *ctx)
 {
 	if (t->type == N_FLO) {
-		t->type = N_INT;
-		t->val = t->flo;
+		aaerror(t, "%s requires an integer expression, got float (%g)", ctx, t->flo);
+		return -1;
 	}
-	return t;
+	return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -417,7 +417,7 @@ int eval_word(struct st *t)
 
 	u = eval(t->args);
 	if (u) return u;
-	float2int(t->args);
+	if (require_int(t->args, "instruction operand or .word")) return -1;
 
 	switch (t->type) {
 		case N_WORD:
@@ -469,7 +469,7 @@ int eval_multiword(struct st *t)
 
 	switch (t->type) {
 		case N_DWORD:
-			float2int(arg);
+			if (require_int(arg, ".dword")) return -1;
 			if ((arg->val < INT_MIN) || (arg->val > UINT_MAX)) {
 				aaerror(t, "Value won't fit in a DWORD: %lli", (long long) arg->val);
 				return -1;
@@ -505,7 +505,7 @@ int eval_res(struct st *t)
 	// first, we need element count
 	u = eval(t->args);
 	if (u) return u;
-	float2int(t->args);
+	if (require_int(t->args, ".res count")) return -1;
 
 	if ((t->args->val < 0) || (t->args->val > 65536)) {
 		aaerror(t, "Cannot reserve memory outside the process address space (requested %lli words)", (long long) t->args->val);
@@ -518,7 +518,7 @@ int eval_res(struct st *t)
 	if (t->args->next) {
 		u = eval(t->args->next);
 		if (u) return u;
-		float2int(t->args->next);
+		if (require_int(t->args->next, ".res fill value")) return -1;
 		value = t->args->next->val;
 	}
 
@@ -542,7 +542,7 @@ int eval_org(struct st *t)
 		aaerror(t, ".org argument must be a constant expression (no forward references)");
 	}
 	if (u) return -1;
-	float2int(t->args);
+	if (require_int(t->args, ".org")) return -1;
 
 	if (t->args->val < ic) {
 		aaerror(t, "Cannot move location pointer backwards by %lli words", (long long) t->args->val - ic);
@@ -864,7 +864,7 @@ int eval_as_short(struct st *t, int type, int op)
 
 	int u = eval(t);
 	if (u) return u;
-	float2int(t);
+	if (require_int(t, "instruction operand")) return -1;
 
 	switch (type) {
 		case N_OP_SHC:

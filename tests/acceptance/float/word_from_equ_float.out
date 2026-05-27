@@ -1,0 +1,1 @@
+acceptance/float/word_from_equ_float.asm:2:7: instruction operand or .word requires an integer expression, got float (1.5)

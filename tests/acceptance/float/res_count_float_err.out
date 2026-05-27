@@ -1,0 +1,1 @@
+acceptance/float/res_count_float_err.asm:1:6: .res count requires an integer expression, got float (4)

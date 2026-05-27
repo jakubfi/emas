@@ -1,0 +1,1 @@
+acceptance/float/org_float_err.asm:1:6: .org requires an integer expression, got float (16)

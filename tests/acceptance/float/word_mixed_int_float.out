@@ -1,0 +1,1 @@
+acceptance/float/word_mixed_int_float.asm:1:14: instruction operand or .word requires an integer expression, got float (2.5)
