@@ -190,7 +190,6 @@ int eval_1arg_int(struct st *t, struct st *arg)
 	AADEBUG("%s %lli = %lli", eval_tab[t->type].name, (long long) arg->val, (long long) t->val);
 
 	t->type = N_INT;
-	t->flags |= arg->flags & ST_ADDRESS;
 
 	return 0;
 }
