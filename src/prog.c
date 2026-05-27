@@ -878,15 +878,8 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if (rel_op && (t->flags & ST_ADDRESS)) {
-		int diff = t->val - (ic+1);
-		// TODO: U WUT M8?
-		if (diff >= 65535 - 63) {
-			t->val = diff - 65536;
-		} else if (diff <= -65535 + 63) {
-			t->val = diff + 65536;
-		} else {
-			t->val = diff;
-		}
+		// Convert absolute address to signed IC-relative offset, wrapping in 16-bit address space.
+		t->val = (int16_t)(uint16_t)(t->val - (ic + 1));
 	}
 
 	if ((t->val < min) || (t->val > max)) {
