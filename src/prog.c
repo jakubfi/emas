@@ -1012,10 +1012,6 @@ int assemble(struct st *prog, int keep_going)
 	ic = 0;
 
 	while (t) {
-		if (ic > 0xffff) {
-			aaerror(t, "Program too large (>65536 words)");
-			return -1;
-		}
 		if (t->ic < 0) {
 			t->ic = ic;
 		} else {
@@ -1025,6 +1021,10 @@ int assemble(struct st *prog, int keep_going)
 		u = eval(t);
 		AADEBUG("---- eval ret: %i", u);
 		ic += t->size;
+		if (ic > 0x10000) {
+			aaerror(t, "Program too large (>65536 words)");
+			return -1;
+		}
 		if ((u < 0) || ((u > 0) && !keep_going)) {
 			return u;
 		} else {

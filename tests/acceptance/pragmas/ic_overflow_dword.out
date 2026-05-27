@@ -1,0 +1,1 @@
+acceptance/pragmas/ic_overflow_dword.asm:2:9: Program too large (>65536 words)

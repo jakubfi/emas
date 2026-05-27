@@ -1,0 +1,1 @@
+acceptance/pragmas/ic_overflow_float.asm:2:11: Program too large (>65536 words)
