@@ -1033,7 +1033,8 @@ int add_const(char *name, int val)
 		struct st *t = st_int(N_INT, val);
 		dh_addt(sym, name, SYM_CONST, t);
 	} else {
-		s->value = val;
+		st_drop(s->t);
+		s->t = st_int(N_INT, val);
 	}
 
 	return 0;

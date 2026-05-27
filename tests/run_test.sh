@@ -14,7 +14,10 @@ for d in $DIRS ; do
 	for f in $files ; do
 		echo $f
 		expected=$(echo $f | sed s/\.asm$/\.out/)
-		$EMAS -O debug $f &> /tmp/acceptance.out
+		argsfile=$(echo $f | sed s/\.asm$/\.args/)
+		extraargs=""
+		[ -f "$argsfile" ] && extraargs=$(cat "$argsfile")
+		$EMAS -O debug $extraargs $f &> /tmp/acceptance.out
 		$DIFF $expected /tmp/acceptance.out
 		if [ $? != 0 ] ; then
 			echo "Ooops."
