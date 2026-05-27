@@ -1,0 +1,1 @@
+acceptance/labels/label_redef_err.asm:3:1: Symbol 'foo' already defined

@@ -1,0 +1,1 @@
+acceptance/labels/local_define_no_context_err.asm:1:1: Cannot define local label ".local" outside a global label context

@@ -1,0 +1,1 @@
+acceptance/expr/recursive_sym_err.asm:1:8: Symbol 'a' is defined recursively

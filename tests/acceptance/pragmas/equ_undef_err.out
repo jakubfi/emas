@@ -1,0 +1,1 @@
+acceptance/pragmas/equ_undef_err.asm:1:7: Symbol 'nosuchsym' not defined

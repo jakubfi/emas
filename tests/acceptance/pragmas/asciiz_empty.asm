@@ -1,0 +1,2 @@
+.asciiz ""
+.word 0
