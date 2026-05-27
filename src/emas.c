@@ -38,6 +38,7 @@ extern FILE *yyin;
 
 char *input_file;
 char *output_file;
+char *sym_file;
 char *basename;
 int otype = O_RAW;
 
@@ -47,6 +48,7 @@ void usage()
 	fprintf(stderr, "Usage: emas [options] [input]\n");
 	fprintf(stderr, "Where options are one or more of:\n");
 	fprintf(stderr, "   -o <output>    : set output file\n");
+	fprintf(stderr, "   -s <file>      : dump symbol table to file\n");
 	fprintf(stderr, "   -c <cpu>       : set CPU type: mera400, mx16\n");
 	fprintf(stderr, "   -O <otype>     : set output type: raw, debug, keys (defaults to raw)\n");
 	fprintf(stderr, "   -I <dir>       : search for include files in <dir>\n");
@@ -63,7 +65,7 @@ int parse_args(int argc, char **argv)
 	int val = 0;
 
 	int option;
-	while ((option = getopt(argc, argv,"I:D:c:O:vhdo:")) != -1) {
+	while ((option = getopt(argc, argv,"I:D:c:O:vhdo:s:")) != -1) {
 		switch (option) {
 			case 'c':
 				if (prog_cpu(optarg, CPU_FORCED)) {
@@ -107,6 +109,9 @@ int parse_args(int argc, char **argv)
 				break;
 			case 'o':
 				output_file = strdup(optarg);
+				break;
+			case 's':
+				sym_file = strdup(optarg);
 				break;
 			default:
 				return -1;
@@ -266,6 +271,25 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s\n", aerr);
 		goto cleanup;
 	}
+
+	if (sym_file) {
+		FILE *sf = fopen(sym_file, "w");
+		if (!sf) {
+			fprintf(stderr, "Cannot open symbol file '%s' for writing\n", sym_file);
+			goto cleanup;
+		}
+		for (int i=0 ; i<sym->size ; i++) {
+			struct dh_elem *e = sym->slots[i];
+			while (e) {
+				if (!(e->type & SYM_UNDEFINED) && e->t && (e->t->flags & ST_RELATIVE)) {
+					fprintf(sf, "0x%04x %s\n", (uint16_t) e->t->val, e->name);
+				}
+				e = e->next;
+			}
+		}
+		fclose(sf);
+	}
+
 	ret = 0;
 
 cleanup:
@@ -278,6 +302,7 @@ cleanup:
 	st_drop(entry);
 	kw_destroy();
 	free(output_file);
+	free(sym_file);
 	free(basename);
 
 	return ret;
