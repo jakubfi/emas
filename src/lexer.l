@@ -340,8 +340,6 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 	if (yy_start_stack_ptr) yy_top_state(); // just to suppress warning
 	yypop_buffer_state();
 	loc_pop();
-	free(cur_label);
-	cur_label = NULL;
 	if (!YY_CURRENT_BUFFER) {
 		yyterminate();
 	}

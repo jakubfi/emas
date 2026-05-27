@@ -33,6 +33,7 @@ struct loc {
 	int line, col;
 	int oline, ocol;
 	int yylineno;
+	char *cur_label;
 };
 
 extern struct loc loc_stack[INCLUDE_MAX+1];

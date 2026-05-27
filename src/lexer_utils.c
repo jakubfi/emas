@@ -237,6 +237,8 @@ int loc_push(char *fname)
 
 	loc_pos++;
 
+	loc_stack[loc_pos].cur_label = cur_label;
+	cur_label = NULL;
 	loc_stack[loc_pos].filename = cfname->str;
 	loc_stack[loc_pos].col = 1;
 	loc_stack[loc_pos].line = 1;
@@ -254,6 +256,8 @@ int loc_pop()
 {
 	if (loc_pos >= 0) {
 		yylineno = loc_stack[loc_pos].yylineno;
+		free(cur_label);
+		cur_label = loc_stack[loc_pos].cur_label;
 		loc_pos--;
 		return 0;
 	} else {
