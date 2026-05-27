@@ -283,13 +283,25 @@ int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 			t->val = arg1->val | arg2->val;
 			break;
 		case N_LSHIFT:
-			t->val = arg1->val << arg2->val;
+			if (arg2->val < 0 || arg2->val > 15) {
+				aaerror(t, "shift amount %lli is out of range [0, 15]", (long long) arg2->val);
+				return -1;
+			}
+			t->val = (uint64_t) arg1->val << arg2->val;
 			break;
 		case N_RSHIFT:
+			if (arg2->val < 0 || arg2->val > 15) {
+				aaerror(t, "shift amount %lli is out of range [0, 15]", (long long) arg2->val);
+				return -1;
+			}
 			t->val = arg1->val >> arg2->val;
 			break;
 		case N_SCALE:
-			t->val = arg1->val << (15-arg2->val);
+			if (arg2->val < 0 || arg2->val > 15) {
+				aaerror(t, "scale amount %lli is out of range [0, 15]", (long long) arg2->val);
+				return -1;
+			}
+			t->val = (uint64_t) arg1->val << (15 - arg2->val);
 			break;
 		default:
 			assert(!"unknown 2-arg operator");

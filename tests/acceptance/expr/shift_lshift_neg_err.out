@@ -1,0 +1,1 @@
+acceptance/expr/shift_lshift_neg_err.asm:1:14: shift amount -1 is out of range [0, 15]

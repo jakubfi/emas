@@ -1,0 +1,1 @@
+acceptance/expr/shift_scale_err.asm:1:11: scale amount 16 is out of range [0, 15]

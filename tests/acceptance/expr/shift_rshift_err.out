@@ -1,0 +1,1 @@
+acceptance/expr/shift_rshift_err.asm:1:16: shift amount 16 is out of range [0, 15]
