@@ -493,7 +493,7 @@ int eval_res(struct st *t)
 
 	// first, we need element count
 	u = eval(t->args);
-	if (u) return -1;
+	if (u) return u;
 	float2int(t->args);
 
 	if ((t->args->val < 0) || (t->args->val > 65536)) {
