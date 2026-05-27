@@ -731,7 +731,10 @@ int eval_ifdef(struct st *t)
 		prog = t->args->next;
 	}
 
-	assert(prog);
+	if (!prog) {
+		t->type = N_NONE;
+		return 0;
+	}
 
 	// if there is any code in this program block
 	if (prog->args) {
