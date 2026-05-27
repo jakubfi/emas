@@ -281,7 +281,7 @@ int main(int argc, char **argv)
 		for (int i=0 ; i<sym->size ; i++) {
 			struct dh_elem *e = sym->slots[i];
 			while (e) {
-				if (!(e->type & SYM_UNDEFINED) && e->t && (e->t->flags & ST_RELATIVE)) {
+				if (!(e->type & SYM_UNDEFINED) && e->t && (e->t->flags & ST_ADDRESS)) {
 					fprintf(sf, "0x%04x %s\n", (uint16_t) e->t->val, e->name);
 				}
 				e = e->next;

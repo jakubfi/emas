@@ -190,7 +190,7 @@ int eval_1arg_int(struct st *t, struct st *arg)
 	AADEBUG("%s %lli = %lli", eval_tab[t->type].name, (long long) arg->val, (long long) t->val);
 
 	t->type = N_INT;
-	t->flags |= arg->flags & ST_RELATIVE;
+	t->flags |= arg->flags & ST_ADDRESS;
 
 	return 0;
 }
@@ -243,10 +243,10 @@ int eval_1arg(struct st *t)
 // -----------------------------------------------------------------------
 int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 {
-	if ((t->type == N_MINUS) && (arg1->flags & ST_RELATIVE) && (arg2->flags & ST_RELATIVE)) {
-		t->flags &= ~ST_RELATIVE;
+	if ((t->type == N_MINUS) && (arg1->flags & ST_ADDRESS) && (arg2->flags & ST_ADDRESS)) {
+		t->flags &= ~ST_ADDRESS;
 	} else {
-		t->flags |= (arg1->flags | arg2->flags) & ST_RELATIVE;
+		t->flags |= (arg1->flags | arg2->flags) & ST_ADDRESS;
 	}
 
 	switch (t->type) {
@@ -308,10 +308,10 @@ int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 // -----------------------------------------------------------------------
 int eval_2arg_float(struct st *t, struct st *arg1, struct st *arg2)
 {
-	if ((t->type == N_MINUS) && (arg1->flags & ST_RELATIVE) && (arg2->flags & ST_RELATIVE)) {
-		t->flags &= ~ST_RELATIVE;
+	if ((t->type == N_MINUS) && (arg1->flags & ST_ADDRESS) && (arg2->flags & ST_ADDRESS)) {
+		t->flags &= ~ST_ADDRESS;
 	} else {
-		t->flags |= (arg1->flags | arg2->flags) & ST_RELATIVE;
+		t->flags |= (arg1->flags | arg2->flags) & ST_ADDRESS;
 	}
 
 	switch (t->type) {
@@ -419,7 +419,7 @@ int eval_word(struct st *t)
 	}
 
 	t->type = N_INT;
-	t->flags |= t->args->flags & ST_RELATIVE;
+	t->flags |= t->args->flags & ST_ADDRESS;
 	st_drop(t->args);
 	t->args = t->last = NULL;
 
@@ -593,14 +593,14 @@ int eval_label(struct st *t)
 
 	if (!s) {
 		tic = st_int(N_INT, ic);
-		tic->flags |= ST_RELATIVE;
+		tic->flags |= ST_ADDRESS;
 		dh_addt(sym, t->str, SYM_CONST, tic);
 	} else if (s->type & SYM_UNDEFINED) {
 		// this is when .global label appears before label
 		s->type &= ~SYM_UNDEFINED;
 		s->type |= SYM_CONST;
 		tic = st_int(N_INT, ic);
-		tic->flags |= ST_RELATIVE;
+		tic->flags |= ST_ADDRESS;
 		s->t = tic;
 	} else {
 		aaerror(t, "Symbol '%s' already defined", t->str);
@@ -825,7 +825,7 @@ int eval_name(struct st *t)
 	t->type = s->t->type;
 	t->val = s->t->val;
 	t->flo = s->t->flo;
-	t->flags |= s->t->flags & ST_RELATIVE;
+	t->flags |= s->t->flags & ST_ADDRESS;
 
 	return 0;
 }
@@ -835,7 +835,7 @@ int eval_curloc(struct st *t)
 {
 	t->type = N_INT;
 	t->val = ic;
-	t->flags |= ST_RELATIVE;
+	t->flags |= ST_ADDRESS;
 	return 0;
 }
 
@@ -877,7 +877,7 @@ int eval_as_short(struct st *t, int type, int op)
 			break;
 	}
 
-	if (rel_op && (t->flags & ST_RELATIVE)) {
+	if (rel_op && (t->flags & ST_ADDRESS)) {
 		int diff = t->val - (ic+1);
 		// TODO: U WUT M8?
 		if (diff >= 65535 - 63) {
