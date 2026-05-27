@@ -527,6 +527,9 @@ int eval_res(struct st *t)
 int eval_org(struct st *t)
 {
 	int u = eval(t->args);
+	if (u > 0) {
+		aaerror(t, ".org argument must be a constant expression (no forward references)");
+	}
 	if (u) return -1;
 	float2int(t->args);
 

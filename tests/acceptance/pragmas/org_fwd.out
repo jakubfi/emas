@@ -1,0 +1,1 @@
+acceptance/pragmas/org_fwd.asm:2:1: .org argument must be a constant expression (no forward references)
