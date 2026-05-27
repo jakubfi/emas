@@ -1,0 +1,1 @@
+acceptance/expr/lshift_result_overflow_err.asm:1:14: Value 65536 is not an 16-bit signed/unsigned integer

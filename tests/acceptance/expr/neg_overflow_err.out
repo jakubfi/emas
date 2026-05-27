@@ -1,0 +1,1 @@
+acceptance/expr/neg_overflow_err.asm:1:14: Value -65281 is not an 16-bit signed/unsigned integer

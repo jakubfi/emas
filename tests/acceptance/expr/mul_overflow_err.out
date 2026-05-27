@@ -1,0 +1,1 @@
+acceptance/expr/mul_overflow_err.asm:1:16: Value 65536 is not an 16-bit signed/unsigned integer

@@ -1,0 +1,1 @@
+acceptance/expr/uminus_overflow_err.asm:1:15: Value -65535 is not an 16-bit signed/unsigned integer
