@@ -296,11 +296,11 @@ int eval_2arg_int(struct st *t, struct st *arg1, struct st *arg2)
 			return -1;
 	}
 
+	AADEBUG("%lli %s %lli = %lli", (long long) arg1->val, eval_tab[t->type].name, (long long) arg2->val, (long long) t->val);
+
 	t->type = N_INT;
 	st_drop(t->args);
 	t->args = t->last = NULL;
-
-	AADEBUG("%lli %s %lli = %lli", (long long) arg1->val, eval_tab[t->type].name, (long long) arg2->val, (long long) t->val);
 
 	return 0;
 }
