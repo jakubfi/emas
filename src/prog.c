@@ -768,7 +768,7 @@ int eval_struct(struct st *t)
 	}
 
 	// update structure size only when all field sizes are known
-	s->t->val = t->last->val + t->last->args->val;
+	s->t->val = t->last ? t->last->val + t->last->args->val : 0;
 	s->type &= ~SYM_UNDEFINED;
 
 	// drop the arguments subtree
