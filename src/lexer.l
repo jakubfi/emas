@@ -35,6 +35,7 @@
 %x p_include
 %x p_line
 %x p_file
+%x p_file_str
 %x comment
 
 nl		(\n)|(\r\n)|(\f)|(\v)
@@ -262,6 +263,53 @@ achar	[^\a\b\f\n\r\t\v\\\'\"]
 <p_file>[a-zA-Z0-9_.-]+ {
 	yy_pop_state();
 	loc_file(yytext);
+}
+<p_file>\" {
+	str_len = 0;
+	yy_push_state(p_file_str);
+}
+
+<p_file_str>\" {
+	str_append('\0');
+	yy_pop_state();
+	yy_pop_state();
+	loc_file(str_buf);
+}
+
+<p_file_str>{e_chr}|{e_hex}|{e_oct} {
+	int c = unesc_char(yytext, NULL);
+	if (c < 0) {
+		llerror("Invalid escape sequence: \"%s\"", yytext);
+		yy_pop_state();
+		yy_pop_state();
+		return INVALID_PRAGMA;
+	} else if (c > 255) {
+		llerror("Invalid escape sequence (value too big): \"%s\"", yytext);
+		yy_pop_state();
+		yy_pop_state();
+		return INVALID_PRAGMA;
+	}
+	if (!str_append(c)) {
+		yy_pop_state();
+		yy_pop_state();
+		return INVALID_PRAGMA;
+	}
+}
+
+<p_file_str>{nl} {
+	llerror("Unterminated file name string");
+	yy_pop_state();
+	yy_pop_state();
+	yylineno++;
+	return INVALID_PRAGMA;
+}
+
+<p_file_str>. {
+	if (!str_append(*yytext)) {
+		yy_pop_state();
+		yy_pop_state();
+		return INVALID_PRAGMA;
+	}
 }
 
 <p_include>{nl} {
