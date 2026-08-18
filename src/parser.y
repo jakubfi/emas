@@ -98,8 +98,6 @@ typedef struct YYLTYPE {
 %token P_ASCIIZ ".asciiz"
 %token P_RES ".res"
 %token P_ORG ".org"
-%token P_ENTRY ".entry"
-%token P_GLOBAL ".global"
 %token P_IFDEF ".ifdef"
 %token P_IFNDEF ".ifndef"
 %token P_ELSE ".else"
@@ -222,8 +220,6 @@ pragma:
 	| P_RES expr { $$ = st_arg(N_RES, $2, NULL); }
 	| P_RES expr ',' expr { $$ = st_arg(N_RES, $2, $4, NULL); }
 	| P_ORG expr { $$ = st_arg(N_ORG, $2, NULL); }
-	| P_ENTRY expr { $$ = st_arg(N_ENTRY, $2, NULL); }
-	| P_GLOBAL NAME { $$ = st_str(N_GLOBAL, $2); free($2); }
 	| P_IFDEF NAME lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $3); st_arg_app($$, st_int(N_PROG, 0)); free($2); }
 	| P_IFDEF NAME lines P_ELSE lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, $3); st_arg_app($$, $5); free($2); }
 	| P_IFNDEF NAME lines P_ENDIF { $$ = st_str(N_IFDEF, $2); st_arg_app($$, st_int(N_PROG, 0)); st_arg_app($$, $3); free($2); }

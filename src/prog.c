@@ -34,7 +34,6 @@
 
 struct dh_table *sym;
 struct st *program;
-struct st *entry;
 
 char aerr[MAX_ERRLEN+1];
 int aadebug;
@@ -67,8 +66,6 @@ struct eval_t eval_tab[] = {
 	[N_ORG]		=	{ ".org",	eval_org },
 	[N_ASCII]	=	{ ".ascii",	eval_string },
 	[N_ASCIIZ]	=	{ ".asciiz",eval_string },
-	[N_ENTRY]	=	{ ".entry",	eval_entry },
-	[N_GLOBAL]	=	{ ".global",eval_global },
 	[N_IFDEF]	=	{ ".ifdef",	eval_ifdef },
 	[N_STRUCT]	=	{ ".struct",eval_struct },
 	[N_STRUCT_FIELD]	=	{ "SFIELD",	eval_struct_field },
@@ -609,13 +606,6 @@ int eval_label(struct st *t)
 		tic = st_int(N_INT, ic);
 		tic->flags |= ST_ADDRESS;
 		dh_addt(sym, t->str, SYM_CONST, tic);
-	} else if (s->type & SYM_UNDEFINED) {
-		// this is when .global label appears before label
-		s->type &= ~SYM_UNDEFINED;
-		s->type |= SYM_CONST;
-		tic = st_int(N_INT, ic);
-		tic->flags |= ST_ADDRESS;
-		s->t = tic;
 	} else {
 		aaerror(t, "Symbol '%s' already defined", t->str);
 		return -1;
@@ -681,40 +671,6 @@ int eval_const(struct st *t)
 	t->args = NULL;
 
 	return 0;}
-
-// -----------------------------------------------------------------------
-int eval_entry(struct st *t)
-{
-	if (entry) {
-		aaerror(t, "Program entry already defined");
-		return -1;
-	}
-
-	entry = t->args;
-
-	t->type = N_NONE;
-	t->args = NULL;
-
-	return 0;
-}
-
-// -----------------------------------------------------------------------
-int eval_global(struct st *t)
-{
-	struct dh_elem *s;
-
-	s = dh_get(sym, t->str);
-
-	if (s) {
-		s->type |= SYM_GLOBAL;
-	} else {
-		dh_addv(sym, t->str, SYM_UNDEFINED | SYM_GLOBAL, 0);
-	}
-
-	t->type = N_NONE;
-
-	return 0;
-}
 
 // -----------------------------------------------------------------------
 int eval_ifdef(struct st *t)

@@ -29,7 +29,6 @@ typedef int (*eval_fun)(struct st *t);
 
 extern struct dh_table *sym;
 extern struct st *program;
-extern struct st *entry;
 extern int cpu;
 
 extern char aerr[MAX_ERRLEN+1];
@@ -45,7 +44,6 @@ enum cpu_types {
 enum sym_types {
 	SYM_UNDEFINED	= 0b00000001,
 	SYM_CONST		= 0b00000100,
-	SYM_GLOBAL		= 0b00001000,
 };
 
 enum node_types {
@@ -73,8 +71,6 @@ enum node_types {
 	N_ORG,
 	N_ASCII,
 	N_ASCIIZ,
-	N_ENTRY,
-	N_GLOBAL,
 	N_IFDEF,
 	N_STRUCT,
 	N_STRUCT_FIELD,
@@ -124,8 +120,6 @@ int eval_string(struct st *t);
 int eval_label(struct st *t);
 int eval_equ(struct st *t);
 int eval_const(struct st *t);
-int eval_entry(struct st *t);
-int eval_global(struct st *t);
 int eval_ifdef(struct st *t);
 int eval_struct(struct st *t);
 int eval_struct_field(struct st *t);

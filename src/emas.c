@@ -299,7 +299,6 @@ cleanup:
 	st_drop(filenames);
 	st_drop(program);
 	dh_destroy(sym);
-	st_drop(entry);
 	kw_destroy();
 	free(output_file);
 	free(sym_file);

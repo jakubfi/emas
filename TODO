@@ -4,8 +4,6 @@ BUGS:
 
 TODO:
 
-* .global name, name, ...
-* simplify +/- expressions for relocation
 * preprocessor
   * .macro
   * .alias (.define?)

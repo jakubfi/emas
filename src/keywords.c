@@ -49,8 +49,6 @@ int kw_init()
 	PRAGMA_ADD(".asciiz", P_ASCIIZ);
 	PRAGMA_ADD(".res", P_RES);
 	PRAGMA_ADD(".org", P_ORG);
-	PRAGMA_ADD(".entry", P_ENTRY);
-	PRAGMA_ADD(".global", P_GLOBAL);
 	PRAGMA_ADD(".ifdef", P_IFDEF);
 	PRAGMA_ADD(".ifndef", P_IFNDEF);
 	PRAGMA_ADD(".else", P_ELSE);
