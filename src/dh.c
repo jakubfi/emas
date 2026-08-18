@@ -93,6 +93,9 @@ struct dh_elem * dh_add(struct dh_table *dh, char *name, int type, int value, st
 	}
 
 	struct dh_elem *new_elem = malloc(sizeof(struct dh_elem));
+	if (!new_elem) {
+		return NULL;
+	}
 	new_elem->name = strdup(name);
 	new_elem->type = type;
 	new_elem->value = value;
