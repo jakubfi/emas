@@ -32,6 +32,8 @@ enum output_types {
 	O_KEYS	= 4,
 };
 
+#define SYM_TABLE_SIZE 16000
+
 int yyparse();
 int yylex_destroy();
 extern FILE *yyin;
@@ -142,7 +144,7 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	sym = dh_create(16000, 1);
+	sym = dh_create(SYM_TABLE_SIZE, 1);
 	if (!sym) {
 		fprintf(stderr, "Failed to create symbol table.\n");
 		goto cleanup;
