@@ -88,16 +88,44 @@
 .const IMASK_CPU_H	1\2	; cpu high
 .const IMASK_IFPOWER	1\3	; interface power
 .const IMASK_GROUP_H	1\4	; timer, illegal instruction, arithmetic, unused
-.const IMASK_CH0_1	1\5	; channel 0-1
-.const IMASK_CH2_3	1\6	; channel 2-3
-.const IMASK_CH4_9	1\7	; channel 4-9
-.const IMASK_CH10_15	1\8	; channel 10-15
+.const IMASK_TIMER	IMASK_GROUP_H
+.const IMASK_ILLEGAL	IMASK_GROUP_H
+.const IMASK_DIV_OF	IMASK_GROUP_H
+.const IMASK_FP_UF	IMASK_GROUP_H
+.const IMASK_FP_OF	IMASK_GROUP_H
+.const IMASK_FP_DIV_0	IMASK_GROUP_H
+.const IMASK_FP_ERR	IMASK_GROUP_H
+.const IMASK_SPECIAL	IMASK_GROUP_H
+.const IMASK_CH0_1	1\5	; channels 0-1
+.const IMASK_CH0	IMASK_CH0_1
+.const IMASK_CH1	IMASK_CH0_1
+.const IMASK_CH2_3	1\6	; channels 2-3
+.const IMASK_CH2	IMASK_CH2_3
+.const IMASK_CH3	IMASK_CH2_3
+.const IMASK_CH4_9	1\7	; channels 4-9
+.const IMASK_CH4	IMASK_CH4_9
+.const IMASK_CH5	IMASK_CH4_9
+.const IMASK_CH6	IMASK_CH4_9
+.const IMASK_CH7	IMASK_CH4_9
+.const IMASK_CH8	IMASK_CH4_9
+.const IMASK_CH9	IMASK_CH4_9
+.const IMASK_CH10_15	1\8	; channels 10-15
+.const IMASK_CH10	IMASK_CH10_15
+.const IMASK_CH11	IMASK_CH10_15
+.const IMASK_CH12	IMASK_CH10_15
+.const IMASK_CH13	IMASK_CH10_15
+.const IMASK_CH14	IMASK_CH10_15
+.const IMASK_CH15	IMASK_CH10_15
 .const IMASK_GROUP_L	1\9	; oprq, cpu low, software low, software low
+.const IMASK_OPRQ	IMASK_GROUP_L
+.const IMASK_CPU_L	IMASK_GROUP_L
+.const IMASK_SIU	IMASK_GROUP_L
+.const IMASK_SIL	IMASK_GROUP_L
 
-.const IMASK_ALL_MEM	0xc000	; all memory interrupts
-.const IMASK_ALL_CH	0x0780	; all channel interrupts
-.const IMASK_ALL	0xffc0	; all interrupts
-.const IMASK_NONE	0	; no interrupts
+.const IMASK_ALL_MEM	(IMASK_PARITY|IMASK_NOMEM)
+.const IMASK_ALL_CH	(IMASK_CH0_1|IMASK_CH2_3|IMASK_CH4_9|IMASK_CH10_15)
+.const IMASK_ALL	0b1111111111000000
+.const IMASK_NONE	0
 
 ; 16-bit subset of RZ interrupt register accessible with 'ki' and 'fi' instructions
 
