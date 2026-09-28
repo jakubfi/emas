@@ -840,7 +840,6 @@ int eval_as_short(struct st *t, int type, int op)
 		case N_OP_HLT:
 			min = 0; max = 127;
 			break;
-		case N_OP_BRC:
 		case N_OP_EXL:
 		case N_OP_NRF:
 			min = 0; max = 255;
@@ -856,7 +855,7 @@ int eval_as_short(struct st *t, int type, int op)
 	}
 
 	if ((t->val < min) || (t->val > max)) {
-		aaerror(t, "Argument value %lli for %s is out of range (%i..%i)", (long long) t->val, eval_tab[t->type].name, min, max);
+		aaerror(t, "Argument value %lli is out of range (%i..%i)", (long long) t->val, min, max);
 		return -1;
 	}
 
@@ -892,13 +891,18 @@ int eval_op_short(struct st *t)
 			arg->val |= (arg->val & 0b0000000001000000) << 3;
 			arg->val &= 0b1111111110111111;
 			break;
-		// TODO: BRC/BLC arguments need to be rethinked
 		case N_OP_BLC:
 			if (arg->val & ~0xff00) {
 				aaerror(t, "BLC argument may only have left byte bits set");
 				return -1;
 			}
 			arg->val = arg->val >> 8;
+			break;
+		case N_OP_BRC:
+			if (arg->val & ~0x00ff) {
+				aaerror(t, "BRC argument may only have right byte bits set");
+				return -1;
+			}
 			break;
 		default:
 			break;
