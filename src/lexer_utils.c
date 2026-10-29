@@ -111,10 +111,19 @@ int unesc_char(char *c, int *esclen)
 				ret = strtol(buf, NULL, 16);
 				break;
 			case '0': // oct character value
-				el = 5;
-				strncpy(buf, c+2, 3);
-				buf[3] = '\0';
-				ret = strtol(buf, NULL, 8);
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+				el = 1;
+				ret = 0;
+				while ((el < 4) && (c[el] >= '0') && (c[el] <= '7')) {
+					ret = ret * 8 + c[el] - '0';
+					el++;
+				}
 				break;
 			default: // unknown escape sequence
 				el = 0;

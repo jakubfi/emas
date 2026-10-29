@@ -1,0 +1,1 @@
+acceptance/pragmas/ascii_octal_too_big.asm:1:10: Invalid escape sequence (value too big): "\400"
