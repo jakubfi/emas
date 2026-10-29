@@ -21,7 +21,6 @@ fi
 
 EMDAS=$(which emdas)
 BASEDIR=$1
-TESTDIRS="addr alu args barnb cchar cycle int mem mod multix ops registers vendor"
 
 echo "Testing assembly with: $EMAS"
 if [ -n "$EMDAS" ] ; then
@@ -31,15 +30,16 @@ if [ -n "$STABLE_EMAS" ] ; then
 	echo "Testing against stable version using: $STABLE_EMAS"
 fi
 
+TESTDIRS=$(find $BASEDIR/functional -name '*.asm' -printf '%h\n' | sort -u)
+if [ -z "$TESTDIRS" ] ; then
+	echo "No tests found in $BASEDIR/functional"
+	exit 1
+fi
+
 for tests in $TESTDIRS ; do
 	echo
-	echo "--- Test directory: $tests -----------------------------"
-	files=$(ls -1 $BASEDIR/functional/$tests/*.asm 2>/dev/null)
-	if [ -z "$files" ] ; then
-		echo "Missing tests"
-		exit 1
-	fi
-	for file in $files ; do
+	echo "--- Test directory: ${tests#$BASEDIR/functional/} -----------------------------"
+	for file in $tests/*.asm ; do
 		test_name=$(basename $file)
 		echo -n "$test_name "
 		$EMAS -I ../asminc -Oraw -o /tmp/emas.bin -I $BASEDIR/include $file
